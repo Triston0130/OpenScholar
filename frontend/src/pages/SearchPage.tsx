@@ -28,7 +28,7 @@ const SearchPage: React.FC = () => {
       if (response.papers.length === 0) {
         toast.error('No papers found. Try different keywords or filters.');
       } else {
-        toast.success(`Found ${response.papers.length} papers`);
+        toast.success(`Found ${response.total_results || response.papers.length} papers`);
       }
     } catch (error) {
       console.error('Search error:', error);
