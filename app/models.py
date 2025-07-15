@@ -8,6 +8,8 @@ class SearchRequest(BaseModel):
     year_end: Optional[int] = Field(default=datetime.now().year, ge=1900, le=datetime.now().year)
     discipline: Optional[str] = None
     education_level: Optional[str] = None
+    publication_type: Optional[str] = None  # journal, conference, book, etc.
+    study_type: Optional[str] = None       # experimental, survey, review, meta-analysis
     page: Optional[int] = Field(default=1, ge=1)
     per_page: Optional[int] = Field(default=20, ge=10, le=50)
     
