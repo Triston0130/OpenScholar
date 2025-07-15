@@ -12,6 +12,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
   const [yearEnd, setYearEnd] = useState<number>(new Date().getFullYear());
   const [discipline, setDiscipline] = useState('');
   const [educationLevel, setEducationLevel] = useState('');
+  const [publicationType, setPublicationType] = useState('');
+  const [studyType, setStudyType] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +25,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
       year_end: yearEnd,
       discipline: discipline || undefined,
       education_level: educationLevel || undefined,
+      publication_type: publicationType || undefined,
+      study_type: studyType || undefined,
     };
 
     onSearch(searchRequest);
@@ -116,6 +120,48 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
               <option value="early childhood">Early Childhood</option>
               <option value="k-12">K-12</option>
               <option value="higher ed">Higher Education</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Additional Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Publication Type */}
+          <div>
+            <label htmlFor="publicationType" className="block text-sm font-medium text-gray-700 mb-2">
+              Publication Type
+            </label>
+            <select
+              id="publicationType"
+              value={publicationType}
+              onChange={(e) => setPublicationType(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="">All Types</option>
+              <option value="journal">Journal Article</option>
+              <option value="conference">Conference Paper</option>
+              <option value="book">Book/Chapter</option>
+              <option value="thesis">Thesis/Dissertation</option>
+            </select>
+          </div>
+
+          {/* Study Type */}
+          <div>
+            <label htmlFor="studyType" className="block text-sm font-medium text-gray-700 mb-2">
+              Study Type
+            </label>
+            <select
+              id="studyType"
+              value={studyType}
+              onChange={(e) => setStudyType(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="">All Studies</option>
+              <option value="experimental">Experimental</option>
+              <option value="survey">Survey/Questionnaire</option>
+              <option value="review">Literature Review</option>
+              <option value="meta-analysis">Meta-Analysis</option>
+              <option value="case study">Case Study</option>
             </select>
           </div>
         </div>

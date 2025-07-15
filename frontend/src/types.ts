@@ -15,6 +15,8 @@ export interface SearchRequest {
   year_end?: number;
   discipline?: string;
   education_level?: string;
+  publication_type?: string;
+  study_type?: string;
   page?: number;
   per_page?: number;
 }

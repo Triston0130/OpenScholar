@@ -100,8 +100,15 @@ class SearchService:
         ))
         sources_queried.append("Semantic Scholar")
         
-        # Execute all searches concurrently
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        # Execute all searches concurrently with timeout
+        try:
+            results = await asyncio.wait_for(
+                asyncio.gather(*tasks, return_exceptions=True),
+                timeout=30.0  # 30 second timeout
+            )
+        except asyncio.TimeoutError:
+            logger.error("Search timeout - some APIs may be slow")
+            results = [None] * len(tasks)
         
         # Combine results
         all_papers = []
