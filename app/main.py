@@ -137,15 +137,20 @@ async def search_papers(request: SearchRequest):
             )
         
         # Perform search
-        logger.info(f"Searching for: {request.query}")
-        papers, sources_queried = await search_service.search(request)
+        logger.info(f"Searching for: {request.query} (page {request.page})")
+        all_papers, sources_queried = await search_service.search(request)
         
-        # Limit results to 50 papers
-        papers = papers[:50]
+        # Calculate pagination
+        total_results = len(all_papers)
+        start_idx = (request.page - 1) * request.per_page
+        end_idx = start_idx + request.per_page
+        
+        # Get papers for current page
+        paginated_papers = all_papers[start_idx:end_idx]
         
         return SearchResponse(
-            total_results=len(papers),
-            papers=papers,
+            total_results=total_results,
+            papers=paginated_papers,
             sources_queried=sources_queried
         )
         

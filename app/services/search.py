@@ -2,7 +2,7 @@ from typing import List, Set, Tuple
 import asyncio
 import logging
 from app.models import Paper, SearchRequest
-from app.api_clients import ERICClient, COREClient, DOAJClient, EuropePMCClient, PMCClient
+from app.api_clients import ERICClient, COREClient, DOAJClient, EuropePMCClient, PMCClient, PubMedClient, SemanticScholarClient
 import hashlib
 import re
 
@@ -17,6 +17,8 @@ class SearchService:
         self.doaj_client = DOAJClient()
         self.europe_pmc_client = EuropePMCClient()
         self.pmc_client = PMCClient()
+        self.pubmed_client = PubMedClient()
+        self.semantic_scholar_client = SemanticScholarClient()
         
     async def search(self, request: SearchRequest) -> Tuple[List[Paper], List[str]]:
         """
@@ -77,6 +79,26 @@ class SearchService:
             education_level=request.education_level
         ))
         sources_queried.append("PubMed Central")
+        
+        # PubMed search
+        tasks.append(self.pubmed_client.search(
+            query=request.query,
+            year_start=request.year_start,
+            year_end=request.year_end,
+            discipline=request.discipline,
+            education_level=request.education_level
+        ))
+        sources_queried.append("PubMed")
+        
+        # Semantic Scholar search
+        tasks.append(self.semantic_scholar_client.search(
+            query=request.query,
+            year_start=request.year_start,
+            year_end=request.year_end,
+            discipline=request.discipline,
+            education_level=request.education_level
+        ))
+        sources_queried.append("Semantic Scholar")
         
         # Execute all searches concurrently
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -139,3 +161,5 @@ class SearchService:
         await self.doaj_client.close()
         await self.europe_pmc_client.close()
         await self.pmc_client.close()
+        await self.pubmed_client.close()
+        await self.semantic_scholar_client.close()

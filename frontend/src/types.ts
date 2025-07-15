@@ -15,6 +15,8 @@ export interface SearchRequest {
   year_end?: number;
   discipline?: string;
   education_level?: string;
+  page?: number;
+  per_page?: number;
 }
 
 export interface SearchResponse {

@@ -3,6 +3,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import SearchForm from '../components/SearchForm';
 import ResultCard from '../components/ResultCard';
 import ExportBar from '../components/ExportBar';
+import Pagination from '../components/Pagination';
 import { Paper, SearchRequest } from '../types';
 import { searchPapers, exportPapers, downloadFile } from '../utils/api';
 
@@ -13,13 +14,28 @@ const SearchPage: React.FC = () => {
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [sourcesQueried, setSourcesQueried] = useState<string[]>([]);
   const [totalResults, setTotalResults] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [currentSearchRequest, setCurrentSearchRequest] = useState<SearchRequest | null>(null);
 
-  const handleSearch = async (searchRequest: SearchRequest) => {
+  const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
     setIsLoading(true);
     setSearchPerformed(false);
+    setCurrentSearchRequest(searchRequest);
+    
+    // Reset to page 1 if new search
+    if (resetPage) {
+      setCurrentPage(1);
+    }
     
     try {
-      const response = await searchPapers(searchRequest);
+      const requestWithPagination = {
+        ...searchRequest,
+        page: resetPage ? 1 : currentPage,
+        per_page: perPage
+      };
+      
+      const response = await searchPapers(requestWithPagination);
       setPapers(response.papers);
       setSourcesQueried(response.sources_queried);
       setTotalResults(response.total_results);
@@ -37,6 +53,23 @@ const SearchPage: React.FC = () => {
       setSearchPerformed(true);
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handlePageChange = async (page: number) => {
+    setCurrentPage(page);
+    if (currentSearchRequest) {
+      const request = { ...currentSearchRequest, page, per_page: perPage };
+      await handleSearch(request, false);
+    }
+  };
+  
+  const handlePerPageChange = async (newPerPage: number) => {
+    setPerPage(newPerPage);
+    setCurrentPage(1);
+    if (currentSearchRequest) {
+      const request = { ...currentSearchRequest, page: 1, per_page: newPerPage };
+      await handleSearch(request, false);
     }
   };
 
@@ -124,6 +157,18 @@ const SearchPage: React.FC = () => {
                     <ResultCard key={index} paper={paper} />
                   ))}
                 </div>
+                
+                {/* Pagination */}
+                {totalResults > perPage && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(totalResults / perPage)}
+                    totalResults={totalResults}
+                    perPage={perPage}
+                    onPageChange={handlePageChange}
+                    onPerPageChange={handlePerPageChange}
+                  />
+                )}
               </>
             ) : (
               /* No Results */
