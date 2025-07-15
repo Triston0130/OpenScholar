@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: openscholar-api
+    runtime: python
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: CORE_API_KEY
+        sync: false
+      - key: ERIC_API_KEY
+        sync: false
+      - key: DOAJ_API_KEY
+        sync: false
+      - key: MAX_RESULTS_PER_API
+        value: "20"
+      - key: REQUEST_TIMEOUT
+        value: "30"
+    healthCheckPath: /
+    autoDeploy: true
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetMemoryPercent: 70
+      targetCPUPercent: 70
