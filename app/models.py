@@ -48,20 +48,13 @@ class ExportRequest(BaseModel):
     format: str = Field(..., pattern="^(csv|json|bib)$")
     
     class Config:
+
+class ExternalPaperRequest(BaseModel):
+    doi: str = Field(..., description="DOI of the paper to fetch")
+    
+    class Config:
         json_schema_extra = {
             "example": {
-                "papers": [
-                    {
-                        "title": "Early Language Development in Children",
-                        "authors": ["Smith, J.", "Jones, M."],
-                        "abstract": "This study examines early language development...",
-                        "year": "2023",
-                        "source": "ERIC",
-                        "full_text_url": "https://example.com/paper.pdf",
-                        "doi": "10.1234/example",
-                        "journal": "Journal of Child Development"
-                    }
-                ],
-                "format": "bib"
+                "doi": "10.1234/example.2023.001"
             }
         }

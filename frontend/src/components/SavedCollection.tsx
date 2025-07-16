@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { SavedPaper, updatePaperTagsAndNotes, getAllTags, getCollectionPapers, getCollections } from '../utils/collections';
+import { SavedPaper, updatePaperTagsAndNotes, getAllTags, getCollectionPapers, getCollections, addPaperToCollection } from '../utils/collections';
+import AddExternalPaperModal from './AddExternalPaperModal';
 import ResultCard from './ResultCard';
+import { Paper } from '../types';
 
 interface SavedCollectionProps {
   onBackToSearch?: () => void;
@@ -15,6 +17,7 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
+  const [showAddExternalModal, setShowAddExternalModal] = useState(false);
 
   useEffect(() => {
     loadSavedPapers();
@@ -56,6 +59,11 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
 
   const handleRemoveTag = (tagToRemove: string) => {
     setEditTags(editTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleAddExternalPaper = (paper: Paper) => {
+    addPaperToCollection(paper, 'default');
+    loadSavedPapers();
   };
 
   const handleExport = (format: 'bibtex' | 'pdf-list' | 'summary') => {
@@ -157,6 +165,17 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
             </div>
             
             <div className="flex items-center gap-3">
+              {/* Add External Paper Button */}
+              <button
+                onClick={() => setShowAddExternalModal(true)}
+                className="flex items-center px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add External Paper
+              </button>
+              
               {/* Export Menu */}
               <div className="relative">
                 <button
@@ -440,6 +459,13 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
           </div>
         </div>
       )}
+      
+      {/* Add External Paper Modal */}
+      <AddExternalPaperModal
+        isOpen={showAddExternalModal}
+        onClose={() => setShowAddExternalModal(false)}
+        onAddPaper={handleAddExternalPaper}
+      />
     </div>
   );
 };

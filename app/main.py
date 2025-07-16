@@ -6,9 +6,10 @@ import logging
 import os
 from dotenv import load_dotenv
 
-from app.models import SearchRequest, SearchResponse, ExportRequest
+from app.models import SearchRequest, SearchResponse, ExportRequest, ExternalPaperRequest
 from app.services import SearchService
 from app.export import ExportService
+from app.external_papers import ExternalPaperFetcher
 
 # Load environment variables
 load_dotenv()
@@ -23,17 +24,19 @@ logger = logging.getLogger(__name__)
 # Global service instances
 search_service = None
 export_service = None
+external_paper_fetcher = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifecycle"""
-    global search_service, export_service
+    global search_service, export_service, external_paper_fetcher
     
     # Startup
     logger.info("Starting OpenScholar API...")
     core_api_key = os.getenv("CORE_API_KEY")
     search_service = SearchService(core_api_key=core_api_key)
     export_service = ExportService()
+    external_paper_fetcher = ExternalPaperFetcher()
     
     yield
     
@@ -78,20 +81,21 @@ async def root():
         "service": "OpenScholar API",
         "version": "1.0.0",
         "environment": "production" if os.getenv("RENDER") else "development",
-        "endpoints": ["/search", "/export"]
+        "endpoints": ["/search", "/export", "/external-paper"]
     }
 
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Detailed health check endpoint"""
-    global search_service, export_service
+    global search_service, export_service, external_paper_fetcher
     
     health_status = {
         "status": "healthy",
         "timestamp": "2024-01-01T00:00:00Z",
         "services": {
             "search": "healthy" if search_service else "unhealthy",
-            "export": "healthy" if export_service else "unhealthy"
+            "export": "healthy" if export_service else "unhealthy",
+            "external_paper": "healthy" if external_paper_fetcher else "unhealthy"
         },
         "environment": {
             "python_version": f"{os.sys.version_info.major}.{os.sys.version_info.minor}.{os.sys.version_info.micro}",
@@ -105,7 +109,7 @@ async def health_check():
     health_status["timestamp"] = datetime.utcnow().isoformat() + "Z"
     
     # Overall status
-    if not search_service or not export_service:
+    if not search_service or not export_service or not external_paper_fetcher:
         health_status["status"] = "degraded"
     
     return health_status
@@ -202,6 +206,34 @@ async def export_papers(request: ExportRequest):
     except Exception as e:
         logger.error(f"Export error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+@app.post("/external-paper", response_model=dict, tags=["External Papers"])
+async def fetch_external_paper(request: ExternalPaperRequest):
+    """
+    Fetch paper metadata from external sources using DOI.
+    
+    - **doi**: DOI of the paper to fetch metadata for
+    
+    Returns paper metadata in OpenScholar format from Crossref and Unpaywall APIs.
+    """
+    global external_paper_fetcher
+    
+    if not external_paper_fetcher:
+        raise HTTPException(status_code=503, detail="External paper service not initialized")
+    
+    try:
+        # Fetch paper metadata
+        logger.info(f"Fetching external paper for DOI: {request.doi}")
+        paper_data = external_paper_fetcher.fetch_paper_from_doi(request.doi)
+        
+        return {
+            "status": "success",
+            "paper": paper_data
+        }
+        
+    except Exception as e:
+        logger.error(f"External paper fetch error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch paper: {str(e)}")
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):

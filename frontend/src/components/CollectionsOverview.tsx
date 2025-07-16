@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getAllCollectionsWithPapers, deleteCollection, updateCollection, exportCollection, getCollectionStats, Collection, updatePaperTagsAndNotes, getAllTags, SavedPaper } from '../utils/collections';
+import { getAllCollectionsWithPapers, deleteCollection, updateCollection, exportCollection, getCollectionStats, Collection, updatePaperTagsAndNotes, getAllTags, SavedPaper, addPaperToCollection } from '../utils/collections';
 import CreateCollectionModal from './CreateCollectionModal';
+import AddExternalPaperModal from './AddExternalPaperModal';
 import ResultCard from './ResultCard';
+import { Paper } from '../types';
 
 interface CollectionsOverviewProps {
   onBackToSearch?: () => void;
@@ -21,6 +23,7 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
+  const [showAddExternalModal, setShowAddExternalModal] = useState(false);
 
   useEffect(() => {
     loadCollections();
@@ -99,6 +102,13 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
     setEditTags(editTags.filter(tag => tag !== tagToRemove));
   };
 
+  const handleAddExternalPaper = (paper: Paper) => {
+    if (selectedCollection) {
+      addPaperToCollection(paper, selectedCollection);
+      loadCollections();
+    }
+  };
+
   const handleDeleteCollection = (collectionId: string) => {
     const collection = collections.find(c => c.id === collectionId);
     if (collection && window.confirm(`Are you sure you want to delete "${collection.name}"? This will remove all papers from this collection.`)) {
@@ -160,15 +170,29 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                 {collections.length} collection{collections.length !== 1 ? 's' : ''} • {totalPapers} total papers
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Collection
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Collection
+              </button>
+              
+              {selectedCollection && (
+                <button
+                  onClick={() => setShowAddExternalModal(true)}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add External Paper
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -542,6 +566,13 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onCreateCollection={handleCreateCollection}
+      />
+      
+      {/* Add External Paper Modal */}
+      <AddExternalPaperModal
+        isOpen={showAddExternalModal}
+        onClose={() => setShowAddExternalModal(false)}
+        onAddPaper={handleAddExternalPaper}
       />
 
       {/* Edit Tags and Notes Modal */}

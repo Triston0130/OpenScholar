@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { SearchRequest, SearchResponse, ExportRequest } from '../types';
+import { SearchRequest, SearchResponse, ExportRequest, Paper } from '../types';
 
 const API_BASE_URL = 'https://openscholar-nsc1.onrender.com';
 
@@ -31,6 +31,18 @@ export const exportPapers = async (exportRequest: ExportRequest): Promise<Blob> 
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(error.response?.data?.detail || 'Failed to export papers');
+    }
+    throw new Error('An unexpected error occurred');
+  }
+};
+
+export const fetchExternalPaper = async (doi: string): Promise<Paper> => {
+  try {
+    const response = await api.post<{paper: Paper}>('/external-paper', { doi });
+    return response.data.paper;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.detail || 'Failed to fetch external paper');
     }
     throw new Error('An unexpected error occurred');
   }
