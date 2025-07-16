@@ -3,6 +3,7 @@ import asyncio
 import logging
 from app.models import Paper, SearchRequest
 from app.api_clients import ERICClient, COREClient, DOAJClient, EuropePMCClient, PMCClient, PubMedClient, SemanticScholarClient
+from app.utils import sort_papers
 import hashlib
 import re
 
@@ -129,10 +130,10 @@ class SearchService:
         # Deduplicate papers
         deduplicated_papers = self._deduplicate_papers(all_papers)
         
-        # Sort by year (newest first)
-        deduplicated_papers.sort(key=lambda p: p.year, reverse=True)
+        # Apply sorting based on request
+        sorted_papers = sort_papers(deduplicated_papers, request.query, request.sort_by)
         
-        return deduplicated_papers, sources_queried
+        return sorted_papers, sources_queried
     
     def _deduplicate_papers(self, papers: List[Paper]) -> List[Paper]:
         """Deduplicate papers based on DOI and title similarity"""

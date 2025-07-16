@@ -16,6 +16,7 @@ const SearchPage: React.FC = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
+  const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'oldest'>('relevance');
   const [currentSearchRequest, setCurrentSearchRequest] = useState<SearchRequest | null>(null);
 
   const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
@@ -32,7 +33,8 @@ const SearchPage: React.FC = () => {
       const requestWithPagination = {
         ...searchRequest,
         page: resetPage ? 1 : currentPage,
-        per_page: perPage
+        per_page: perPage,
+        sort_by: sortBy
       };
       
       const response = await searchPapers(requestWithPagination);
@@ -69,6 +71,15 @@ const SearchPage: React.FC = () => {
     setCurrentPage(1);
     if (currentSearchRequest) {
       const request = { ...currentSearchRequest, page: 1, per_page: newPerPage };
+      await handleSearch(request, false);
+    }
+  };
+
+  const handleSortChange = async (newSortBy: 'relevance' | 'newest' | 'oldest') => {
+    setSortBy(newSortBy);
+    setCurrentPage(1);
+    if (currentSearchRequest) {
+      const request = { ...currentSearchRequest, page: 1, sort_by: newSortBy };
       await handleSearch(request, false);
     }
   };
@@ -135,9 +146,26 @@ const SearchPage: React.FC = () => {
               <>
                 {/* Results Summary */}
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    Search Results ({totalResults} papers found)
-                  </h2>
+                  <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      Search Results ({totalResults} papers found)
+                    </h2>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="sort" className="text-sm font-medium text-gray-700">
+                        Sort by:
+                      </label>
+                      <select
+                        id="sort"
+                        value={sortBy}
+                        onChange={(e) => handleSortChange(e.target.value as 'relevance' | 'newest' | 'oldest')}
+                        className="rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500"
+                      >
+                        <option value="relevance">Relevance</option>
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                      </select>
+                    </div>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <span className="text-sm text-gray-600">Sources queried:</span>
                     {sourcesQueried.map((source, index) => (
