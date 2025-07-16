@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import SearchForm from '../components/SearchForm';
 import ResultCard from '../components/ResultCard';
 import ExportBar from '../components/ExportBar';
 import Pagination from '../components/Pagination';
+import SavedCollection from '../components/SavedCollection';
 import { Paper, SearchRequest } from '../types';
 import { searchPapers, exportPapers, downloadFile } from '../utils/api';
+import { getSavedPapers } from '../utils/savedPapers';
 
 const SearchPage: React.FC = () => {
   const [papers, setPapers] = useState<Paper[]>([]);
@@ -18,6 +20,24 @@ const SearchPage: React.FC = () => {
   const [perPage, setPerPage] = useState(20);
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'oldest'>('relevance');
   const [currentSearchRequest, setCurrentSearchRequest] = useState<SearchRequest | null>(null);
+  const [showSavedCollection, setShowSavedCollection] = useState(false);
+  const [savedCount, setSavedCount] = useState(0);
+
+  useEffect(() => {
+    updateSavedCount();
+    // Listen for saved papers changes
+    const handleSavedPapersChange = () => updateSavedCount();
+    window.addEventListener('savedPapersChanged', handleSavedPapersChange);
+    window.addEventListener('storage', handleSavedPapersChange);
+    return () => {
+      window.removeEventListener('savedPapersChanged', handleSavedPapersChange);
+      window.removeEventListener('storage', handleSavedPapersChange);
+    };
+  }, []);
+
+  const updateSavedCount = () => {
+    setSavedCount(getSavedPapers().length);
+  };
 
   const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
     setIsLoading(true);
@@ -107,6 +127,10 @@ const SearchPage: React.FC = () => {
     }
   };
 
+  if (showSavedCollection) {
+    return <SavedCollection onBackToSearch={() => setShowSavedCollection(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" />
@@ -114,13 +138,33 @@ const SearchPage: React.FC = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              OpenScholar
-            </h1>
-            <p className="text-lg text-gray-600">
-              Search peer-reviewed, open-access research papers in education and child development
-            </p>
+          <div className="flex justify-between items-center">
+            <div className="text-center flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                OpenScholar
+              </h1>
+              <p className="text-lg text-gray-600">
+                Search peer-reviewed, open-access research papers in education and child development
+              </p>
+            </div>
+            
+            {/* Navigation */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowSavedCollection(true)}
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                📁 Collection
+                {savedCount > 0 && (
+                  <span className="ml-1 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                    {savedCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </header>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Paper } from '../types';
+import { savePaper, unsavePaper, isPaperSaved } from '../utils/savedPapers';
 
 interface ResultCardProps {
   paper: Paper;
@@ -9,7 +10,12 @@ interface ResultCardProps {
 const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCitationMenu, setShowCitationMenu] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const citationMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsSaved(isPaperSaved(paper));
+  }, [paper]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -104,9 +110,19 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
     });
   };
 
+  const handleSaveToggle = () => {
+    if (isSaved) {
+      unsavePaper(paper);
+      setIsSaved(false);
+    } else {
+      savePaper(paper);
+      setIsSaved(true);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-      {/* Title with Copy Citation Button */}
+      {/* Title with Action Buttons */}
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-lg font-semibold text-gray-900 leading-tight flex-1 mr-3">
           {paper.full_text_url ? (
@@ -122,8 +138,25 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
           )}
         </h3>
         
-        {/* Copy Citation Dropdown */}
-        <div className="relative" ref={citationMenuRef}>
+        <div className="flex items-center gap-2">
+          {/* Save to Collection Button */}
+          <button
+            onClick={handleSaveToggle}
+            className={`flex items-center px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+              isSaved
+                ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200'
+                : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+            }`}
+            title={isSaved ? 'Remove from collection' : 'Save to collection'}
+          >
+            <svg className="w-4 h-4 mr-1" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+            {isSaved ? 'Saved' : 'Save'}
+          </button>
+
+          {/* Copy Citation Dropdown */}
+          <div className="relative" ref={citationMenuRef}>
           <button
             onClick={() => setShowCitationMenu(!showCitationMenu)}
             className="flex items-center px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
@@ -159,6 +192,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
