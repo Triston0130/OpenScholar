@@ -25,8 +25,8 @@ export interface CollectionWithPapers extends Collection {
 // Collection Management
 export const getCollections = (): Collection[] => {
   try {
-    const data = localStorage.getItem(COLLECTIONS_KEY);
-    const collections = data ? JSON.parse(data).collections || [] : [];
+    const data = getCollectionsData();
+    const collections = data.collections || [];
     
     // Ensure default collection exists
     if (collections.length === 0) {
@@ -39,7 +39,8 @@ export const getCollections = (): Collection[] => {
         color: '#3B82F6'
       };
       collections.push(defaultCollection);
-      saveCollectionsData({ collections, papers: {} });
+      // Preserve existing papers data
+      saveCollectionsData({ collections, papers: data.papers });
     }
     
     return collections;
