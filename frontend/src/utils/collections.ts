@@ -183,12 +183,14 @@ export const getAllTags = (): string[] => {
   const data = getCollectionsData();
   const allTags = new Set<string>();
   
-  Object.values(data.papers).forEach((papers: SavedPaper[]) => {
-    papers.forEach((paper: SavedPaper) => {
-      if (paper.tags) {
-        paper.tags.forEach((tag: string) => allTags.add(tag));
-      }
-    });
+  Object.values(data.papers).forEach((papers) => {
+    if (Array.isArray(papers)) {
+      papers.forEach((paper: SavedPaper) => {
+        if (paper.tags) {
+          paper.tags.forEach((tag: string) => allTags.add(tag));
+        }
+      });
+    }
   });
   
   return Array.from(allTags).sort();
@@ -268,7 +270,12 @@ export const exportCollection = (collectionId: string, format: 'bibtex' | 'pdf-l
 };
 
 // Helper functions
-const getCollectionsData = () => {
+interface CollectionsData {
+  collections: Collection[];
+  papers: Record<string, SavedPaper[]>;
+}
+
+const getCollectionsData = (): CollectionsData => {
   try {
     const data = localStorage.getItem(COLLECTIONS_KEY);
     return data ? JSON.parse(data) : { collections: [], papers: {} };
@@ -278,7 +285,7 @@ const getCollectionsData = () => {
   }
 };
 
-const saveCollectionsData = (data: any) => {
+const saveCollectionsData = (data: CollectionsData) => {
   try {
     localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(data));
   } catch (error) {
