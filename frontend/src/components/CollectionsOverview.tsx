@@ -416,23 +416,40 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                 {selectedCollectionData.papers.length > 0 ? (
                   <div className="space-y-6">
                     {selectedCollectionData.papers.map((paper: any, index: number) => (
-                      <div key={`${paper.doi || paper.title}-${index}`} className="relative">
+                      <div key={`${paper.doi || paper.title}-${index}`} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
                         <ResultCard paper={paper} />
                         
-                        {/* Tags and Notes Overlay */}
-                        <div className="absolute top-4 right-4 bg-white bg-opacity-95 rounded-lg p-3 shadow-sm border border-gray-200 max-w-xs">
-                          <div className="text-xs text-gray-500 mb-2">
-                            Added {new Date(paper.savedAt).toLocaleDateString()}
+                        {/* Integrated Tags and Notes Section */}
+                        <div className="px-6 pb-6 border-t border-gray-100">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-xs text-gray-500">
+                              Added {new Date(paper.savedAt).toLocaleDateString()}
+                            </div>
+                            <button
+                              onClick={() => handleEditPaper(paper, selectedCollectionData.id)}
+                              className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                            >
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit tags & notes
+                            </button>
                           </div>
                           
                           {/* Tags */}
                           {paper.tags && paper.tags.length > 0 && (
-                            <div className="mb-2">
-                              <div className="flex flex-wrap gap-1">
+                            <div className="mb-3">
+                              <div className="flex items-center mb-2">
+                                <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                                <span className="text-sm font-medium text-gray-700">Tags:</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
                                 {paper.tags.map((tag: string, tagIndex: number) => (
                                   <span
                                     key={tagIndex}
-                                    className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full"
+                                    className="inline-block px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full font-medium"
                                   >
                                     {tag}
                                   </span>
@@ -443,27 +460,25 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                           
                           {/* Notes */}
                           {paper.notes && paper.notes.trim() && (
-                            <div className="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200">
-                              <div className="font-medium text-yellow-800 mb-1 flex items-center">
-                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                            <div>
+                              <div className="flex items-center mb-2">
+                                <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
-                                Note:
+                                <span className="text-sm font-medium text-gray-700">Notes:</span>
                               </div>
-                              <div className="text-gray-600 line-clamp-3">{paper.notes}</div>
+                              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{paper.notes}</p>
+                              </div>
                             </div>
                           )}
                           
-                          {/* Edit button */}
-                          <button
-                            onClick={() => handleEditPaper(paper, selectedCollectionData.id)}
-                            className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center"
-                          >
-                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Edit tags & notes
-                          </button>
+                          {/* Show message if no tags or notes */}
+                          {(!paper.tags || paper.tags.length === 0) && (!paper.notes || !paper.notes.trim()) && (
+                            <div className="text-center py-2">
+                              <p className="text-xs text-gray-400 italic">No tags or notes added yet</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
