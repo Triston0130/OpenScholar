@@ -14,6 +14,7 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
   const [editNotes, setEditNotes] = useState('');
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadSavedPapers();
@@ -264,8 +265,39 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
                       </svg>
                       <span className="text-sm font-medium text-gray-700">Notes:</span>
                     </div>
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{paper.notes}</p>
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 max-w-full overflow-hidden">
+                      {(() => {
+                        const noteId = paper.doi || paper.title;
+                        const isExpanded = expandedNotes.has(noteId);
+                        const shouldTruncate = paper.notes.length > 200;
+                        const displayText = shouldTruncate && !isExpanded 
+                          ? paper.notes.substring(0, 200) + '...' 
+                          : paper.notes;
+                        
+                        return (
+                          <div>
+                            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words max-w-full overflow-wrap-anywhere">
+                              {displayText}
+                            </p>
+                            {shouldTruncate && (
+                              <button
+                                onClick={() => {
+                                  const newExpandedNotes = new Set(expandedNotes);
+                                  if (isExpanded) {
+                                    newExpandedNotes.delete(noteId);
+                                  } else {
+                                    newExpandedNotes.add(noteId);
+                                  }
+                                  setExpandedNotes(newExpandedNotes);
+                                }}
+                                className="mt-2 text-blue-600 hover:text-blue-700 font-medium text-xs underline"
+                              >
+                                {isExpanded ? 'Show less' : 'Show more'}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
