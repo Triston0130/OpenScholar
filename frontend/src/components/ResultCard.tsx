@@ -227,7 +227,13 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-            Full Text
+            {paper.full_text_url.includes('pmc') || paper.full_text_url.includes('doi.org') || paper.full_text_url.includes('doaj') || paper.full_text_url.includes('core') ? 
+              'Full Text' : 
+              'View Details'
+            }
+            {(paper.full_text_url.includes('pmc') || paper.full_text_url.includes('doi.org')) && (
+              <span className="ml-1 px-1 py-0.5 bg-green-100 text-green-700 text-xs rounded">PDF</span>
+            )}
           </a>
         )}
         
