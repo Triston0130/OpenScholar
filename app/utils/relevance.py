@@ -86,6 +86,17 @@ class BM25Scorer:
         except:
             pass
         
+        # Citation boost for highly cited papers (helps older papers with high impact)
+        if paper.citation_count and paper.citation_count > 0:
+            # Logarithmic boost to prevent overwhelming dominance of highly cited papers
+            citation_boost = 1 + (math.log(paper.citation_count + 1) / 10)
+            score *= citation_boost
+        
+        # Additional boost for influential citations
+        if paper.influential_citation_count and paper.influential_citation_count > 0:
+            influential_boost = 1 + (paper.influential_citation_count / 20)  # Smaller boost
+            score *= influential_boost
+        
         return score
     
     def _tokenize(self, text: str) -> List[str]:
@@ -160,9 +171,11 @@ def sort_papers(papers: List[Paper], query: str, sort_by: str = 'relevance') -> 
         return sorted(papers, key=get_year)
     
     elif sort_by == 'citations':
-        # Sort by citation count, highest first
+        # Sort by citation count, then influential citations, highest first
         def get_citations(paper):
-            return paper.citation_count if paper.citation_count is not None else 0
+            citation_count = paper.citation_count if paper.citation_count is not None else 0
+            influential_count = paper.influential_citation_count if paper.influential_citation_count is not None else 0
+            return (citation_count, influential_count)
         return sorted(papers, key=get_citations, reverse=True)
     
     else:

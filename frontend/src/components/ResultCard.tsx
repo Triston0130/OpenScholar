@@ -294,6 +294,11 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
             {paper.citation_count.toLocaleString()} citation{paper.citation_count !== 1 ? 's' : ''}
+            {paper.influential_citation_count !== null && paper.influential_citation_count !== undefined && paper.influential_citation_count > 0 && (
+              <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium" title="Influential citations">
+                {paper.influential_citation_count} influential
+              </span>
+            )}
           </div>
         )}
       </div>

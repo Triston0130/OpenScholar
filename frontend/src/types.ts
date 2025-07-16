@@ -8,6 +8,7 @@ export interface Paper {
   doi?: string;
   journal?: string;
   citation_count?: number;
+  influential_citation_count?: number;
 }
 
 export interface SearchRequest {

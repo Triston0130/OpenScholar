@@ -8,6 +8,10 @@ class SemanticScholarClient(BaseAPIClient):
     
     def __init__(self):
         super().__init__(base_url="https://api.semanticscholar.org/graph/v1/")
+        # Add User-Agent header to avoid rate limiting
+        self.client.headers.update({
+            "User-Agent": "OpenScholar Research Tool (Educational Academic Search)"
+        })
     
     async def search(self, query: str, year_start: Optional[int] = None, 
                     year_end: Optional[int] = None, discipline: Optional[str] = None,
@@ -20,7 +24,7 @@ class SemanticScholarClient(BaseAPIClient):
         params = {
             "query": search_query,
             "limit": 100,
-            "fields": "title,authors,abstract,year,venue,publicationTypes,doi,url,citationCount"
+            "fields": "title,authors,abstract,year,venue,publicationTypes,url,citationCount,influentialCitationCount,externalIds"
         }
         
         # Add year filter
@@ -31,6 +35,7 @@ class SemanticScholarClient(BaseAPIClient):
             response = await self.client.get(f"{self.base_url}paper/search", params=params)
             data = response.json()
             
+            
             papers = []
             for item in data.get("data", []):
                 # Skip if not peer-reviewed
@@ -38,8 +43,14 @@ class SemanticScholarClient(BaseAPIClient):
                 if pub_types and not any(t in ["JournalArticle", "Conference"] for t in pub_types):
                     continue
                 
-                # Only include papers with DOI (more likely to have full text access)
-                if not item.get("doi"):
+                # Extract DOI from externalIds
+                doi = None
+                external_ids = item.get("externalIds", {})
+                if external_ids and "DOI" in external_ids:
+                    doi = external_ids["DOI"]
+                
+                # Prefer papers with DOI for full-text access
+                if not doi:
                     continue
                 
                 # Extract authors
@@ -48,19 +59,23 @@ class SemanticScholarClient(BaseAPIClient):
                     if author.get("name"):
                         authors.append(author["name"])
                 
-                # Use DOI link which often leads to full text
-                full_text_url = f"https://doi.org/{item.get('doi')}"
+                # Use DOI link which often leads to full text, or fallback to URL
+                if doi:
+                    full_text_url = f"https://doi.org/{doi}"
+                else:
+                    full_text_url = item.get("url", "")
                 
                 paper = Paper(
                     title=item.get("title", ""),
                     authors=authors if authors else ["Unknown"],
-                    abstract=item.get("abstract", "No abstract available"),
+                    abstract=item.get("abstract") or "No abstract available",
                     year=str(item.get("year", "2000")),
                     source="Semantic Scholar",
                     full_text_url=full_text_url,
-                    doi=item.get("doi"),
+                    doi=doi,
                     journal=item.get("venue", ""),
-                    citation_count=item.get("citationCount")
+                    citation_count=item.get("citationCount"),
+                    influential_citation_count=item.get("influentialCitationCount")
                 )
                 
                 papers.append(paper)
@@ -68,7 +83,7 @@ class SemanticScholarClient(BaseAPIClient):
             return papers
             
         except Exception as e:
-            self.logger.error(f"Semantic Scholar search error: {str(e)}")
+            print(f"Semantic Scholar search error: {str(e)}")
             return []
     
     def _build_query(self, query: str, discipline: Optional[str], education_level: Optional[str]) -> str:
@@ -105,6 +120,12 @@ class SemanticScholarClient(BaseAPIClient):
                 if author.get("name"):
                     authors.append(author["name"])
             
+            # Extract DOI from externalIds
+            doi = None
+            external_ids = raw_paper.get("externalIds", {})
+            if external_ids and "DOI" in external_ids:
+                doi = external_ids["DOI"]
+            
             paper = Paper(
                 title=raw_paper.get("title", ""),
                 authors=authors if authors else ["Unknown"],
@@ -112,13 +133,14 @@ class SemanticScholarClient(BaseAPIClient):
                 year=str(raw_paper.get("year", "2000")),
                 source="Semantic Scholar",
                 full_text_url=raw_paper.get("url", ""),
-                doi=raw_paper.get("doi"),
+                doi=doi,
                 journal=raw_paper.get("venue", ""),
-                citation_count=raw_paper.get("citationCount")
+                citation_count=raw_paper.get("citationCount"),
+                influential_citation_count=raw_paper.get("influentialCitationCount")
             )
             
             return paper
             
         except Exception as e:
-            self.logger.error(f"Error normalizing Semantic Scholar paper: {str(e)}")
+            print(f"Error normalizing Semantic Scholar paper: {str(e)}")
             return None

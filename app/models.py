@@ -36,6 +36,7 @@ class Paper(BaseModel):
     doi: Optional[str] = None
     journal: Optional[str] = None
     citation_count: Optional[int] = None
+    influential_citation_count: Optional[int] = None
     
 class SearchResponse(BaseModel):
     total_results: int
