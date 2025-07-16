@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Paper } from '../types';
 import { getPaperCollections, addPaperToCollection, removePaperFromCollection } from '../utils/collections';
 import { formatCitation } from '../utils/citationFormatter';
+import { generateAccessLinks, AccessLink } from '../utils/proxy';
 import CollectionSelector from './CollectionSelector';
 
 interface ResultCardProps {
@@ -14,24 +15,38 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
   const [showCitationMenu, setShowCitationMenu] = useState(false);
   const [showCollectionSelector, setShowCollectionSelector] = useState(false);
   const [paperCollections, setPaperCollections] = useState<any[]>([]);
+  const [accessLinks, setAccessLinks] = useState<AccessLink[]>([]);
   const citationMenuRef = useRef<HTMLDivElement>(null);
+
+  const updatePaperCollections = useCallback(() => {
+    setPaperCollections(getPaperCollections(paper));
+  }, [paper]);
+
+  const updateAccessLinks = useCallback(() => {
+    setAccessLinks(generateAccessLinks(paper));
+  }, [paper]);
 
   useEffect(() => {
     updatePaperCollections();
-  }, [paper]);
+    updateAccessLinks();
+  }, [paper, updatePaperCollections, updateAccessLinks]);
 
   useEffect(() => {
     const handleCollectionsChange = () => {
       updatePaperCollections();
     };
 
-    window.addEventListener('collectionsChanged', handleCollectionsChange);
-    return () => window.removeEventListener('collectionsChanged', handleCollectionsChange);
-  }, [paper]);
+    const handleProxySettingsChange = () => {
+      updateAccessLinks();
+    };
 
-  const updatePaperCollections = () => {
-    setPaperCollections(getPaperCollections(paper));
-  };
+    window.addEventListener('collectionsChanged', handleCollectionsChange);
+    window.addEventListener('proxySettingsChanged', handleProxySettingsChange);
+    return () => {
+      window.removeEventListener('collectionsChanged', handleCollectionsChange);
+      window.removeEventListener('proxySettingsChanged', handleProxySettingsChange);
+    };
+  }, [updatePaperCollections, updateAccessLinks]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -251,46 +266,37 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
         )}
       </div>
 
-      {/* Links */}
-      <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-200">
-        {paper.full_text_url && (
+      {/* Access Links */}
+      <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+        {accessLinks.map((link, index) => (
           <a
-            href={paper.full_text_url}
+            key={index}
+            href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700 font-medium"
+            className={`inline-flex items-center text-sm font-medium px-3 py-1.5 rounded-md transition-colors ${
+              link.type === 'free' 
+                ? 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200' 
+                : link.type === 'university'
+                ? 'text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                : 'text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200'
+            }`}
+            title={link.type === 'free' ? 'Open access - free to read' : 
+                   link.type === 'university' ? 'Access through your university subscription' : 
+                   'Publisher access (may require subscription)'}
           >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="mr-1.5">{link.icon}</span>
+            {link.label}
+            <svg className="w-3 h-3 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-            {paper.full_text_url.includes('pmc') || paper.full_text_url.includes('doi.org') || paper.full_text_url.includes('doaj') || paper.full_text_url.includes('core') ? 
-              'Full Text' : 
-              'View Details'
-            }
-            {(paper.full_text_url.includes('pmc') || paper.full_text_url.includes('doi.org')) && (
-              <span className="ml-1 px-1 py-0.5 bg-green-100 text-green-700 text-xs rounded">PDF</span>
-            )}
           </a>
-        )}
-        
-        {paper.doi && (
-          <a
-            href={`https://doi.org/${paper.doi}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700 font-medium"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-            DOI: {paper.doi}
-          </a>
-        )}
+        ))}
 
         {/* Citation Count */}
         {paper.citation_count !== null && paper.citation_count !== undefined && (
-          <div className="inline-flex items-center text-sm text-gray-600">
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="inline-flex items-center text-sm text-gray-600 px-3 py-1.5">
+            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
             {paper.citation_count.toLocaleString()} citation{paper.citation_count !== 1 ? 's' : ''}
