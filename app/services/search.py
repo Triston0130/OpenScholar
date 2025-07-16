@@ -85,25 +85,25 @@ class SearchService:
         ))
         sources_queried.append("PubMed Central")
         
-        # PubMed search
-        tasks.append(self.pubmed_client.search(
-            query=request.query,
-            year_start=request.year_start,
-            year_end=request.year_end,
-            discipline=request.discipline,
-            education_level=request.education_level
-        ))
-        sources_queried.append("PubMed")
+        # PubMed search - temporarily disabled for debugging
+        # tasks.append(self.pubmed_client.search(
+        #     query=request.query,
+        #     year_start=request.year_start,
+        #     year_end=request.year_end,
+        #     discipline=request.discipline,
+        #     education_level=request.education_level
+        # ))
+        # sources_queried.append("PubMed")
         
-        # Semantic Scholar search
-        tasks.append(self.semantic_scholar_client.search(
-            query=request.query,
-            year_start=request.year_start,
-            year_end=request.year_end,
-            discipline=request.discipline,
-            education_level=request.education_level
-        ))
-        sources_queried.append("Semantic Scholar")
+        # Semantic Scholar search - temporarily disabled for debugging
+        # tasks.append(self.semantic_scholar_client.search(
+        #     query=request.query,
+        #     year_start=request.year_start,
+        #     year_end=request.year_end,
+        #     discipline=request.discipline,
+        #     education_level=request.education_level
+        # ))
+        # sources_queried.append("Semantic Scholar")
         
         # Execute all searches concurrently with timeout
         try:
