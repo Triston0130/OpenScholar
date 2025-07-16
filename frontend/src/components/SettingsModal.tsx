@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProxySettings, saveProxySettings, ProxySettings, validateProxyUrl, suggestProxyUrl } from '../utils/proxy';
+import { getProxySettings, saveProxySettings, ProxySettings, validateProxyUrl, suggestProxyUrl, getAlternativeProxyPatterns } from '../utils/proxy';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -13,6 +13,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [suggestedUrl, setSuggestedUrl] = useState<string | null>(null);
+  const [alternativeUrls, setAlternativeUrls] = useState<string[]>([]);
   const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
@@ -43,6 +44,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     setUserEmail(email);
     const suggestion = suggestProxyUrl(email);
     setSuggestedUrl(suggestion);
+    
+    // Get alternative URLs for this domain
+    if (email.includes('@')) {
+      const domain = email.split('@')[1];
+      const alternatives = getAlternativeProxyPatterns(domain);
+      setAlternativeUrls(alternatives);
+    } else {
+      setAlternativeUrls([]);
+    }
   };
 
   const handleSave = async () => {
@@ -80,6 +90,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     setIsEnabled(settings.enabled || false);
     setValidationError(null);
     setSuggestedUrl(null);
+    setAlternativeUrls([]);
     setUserEmail('');
     onClose();
   };
@@ -167,6 +178,28 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   </button>
                 </div>
               )}
+              
+              {alternativeUrls.length > 0 && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-sm text-yellow-800 font-medium">Alternative proxy URLs for your institution:</p>
+                  <div className="mt-2 space-y-1">
+                    {alternativeUrls.map((url, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <p className="text-xs text-yellow-700 font-mono">{url}</p>
+                        <button
+                          onClick={() => handleProxyUrlChange(url)}
+                          className="text-xs text-yellow-600 hover:text-yellow-800 font-medium ml-2"
+                        >
+                          Try This
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-yellow-600 mt-2">
+                    💡 Try different URLs if one doesn't work. Contact your library if none work.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Proxy URL */}
@@ -220,9 +253,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
               <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
                 <li>Visit your university library's website</li>
                 <li>Look for "Off-campus access" or "Remote access" links</li>
-                <li>The URL usually contains "ezproxy" or "libproxy"</li>
+                <li>The URL usually contains "ezproxy", "libproxy", or "idm"</li>
                 <li>Contact your library's IT support if you need help</li>
               </ol>
+            </div>
+
+            {/* Troubleshooting for CSUS */}
+            <div className="bg-orange-50 border border-orange-200 rounded-md p-4">
+              <h4 className="text-sm font-medium text-orange-900 mb-2">🔧 Troubleshooting Common Issues:</h4>
+              <div className="text-sm text-orange-800 space-y-2">
+                <p><strong>For CSU Sacramento students:</strong></p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Try: <code className="bg-orange-100 px-1 rounded">https://csus.idm.oclc.org/login?url=</code></li>
+                  <li>Alternative: <code className="bg-orange-100 px-1 rounded">https://libproxy.csus.edu/login?url=</code></li>
+                  <li>If neither works, check the CSUS Library website for current proxy instructions</li>
+                </ul>
+                <p className="mt-2"><strong>If you get "can't find server" errors:</strong></p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Make sure you're connected to the internet</li>
+                  <li>Try accessing the proxy URL directly in your browser first</li>
+                  <li>Some proxies only work from on-campus or VPN connections</li>
+                  <li>Contact your library's IT support for current proxy information</li>
+                </ul>
+              </div>
             </div>
 
             {/* Preview */}

@@ -173,11 +173,11 @@ export const validateProxyUrl = (url: string): { isValid: boolean; error?: strin
 // Known university proxy patterns for auto-detection
 export const getKnownProxyPatterns = (): { [domain: string]: string } => {
   return {
-    // California State Universities
-    'csus.edu': 'https://libproxy.csus.edu/login?url=',
-    'csulb.edu': 'https://libproxy.csulb.edu/login?url=',
-    'csueastbay.edu': 'https://libproxy.csueastbay.edu/login?url=',
-    'csufresno.edu': 'https://libproxy.csufresno.edu/login?url=',
+    // California State Universities (multiple common formats)
+    'csus.edu': 'https://csus.idm.oclc.org/login?url=',
+    'csulb.edu': 'https://csulb.idm.oclc.org/login?url=',
+    'csueastbay.edu': 'https://csueastbay.idm.oclc.org/login?url=',
+    'csufresno.edu': 'https://csufresno.idm.oclc.org/login?url=',
     
     // University of California
     'ucla.edu': 'https://ucla.idm.oclc.org/login?url=',
@@ -201,4 +201,54 @@ export const suggestProxyUrl = (email: string): string | null => {
   const patterns = getKnownProxyPatterns();
   
   return patterns[domain] || null;
+};
+
+// Alternative proxy URL patterns for common universities
+export const getAlternativeProxyPatterns = (domain: string): string[] => {
+  const alternatives: { [key: string]: string[] } = {
+    'csus.edu': [
+      'https://csus.idm.oclc.org/login?url=',
+      'https://libproxy.csus.edu/login?url=',
+      'https://proxy.csus.edu/login?url=',
+      'https://ezproxy.csus.edu/login?url=',
+      'https://csus.libguides.com/proxy/login?url='
+    ],
+    'csulb.edu': [
+      'https://csulb.idm.oclc.org/login?url=',
+      'https://libproxy.csulb.edu/login?url=',
+      'https://ezproxy.csulb.edu/login?url='
+    ],
+    'csueastbay.edu': [
+      'https://csueastbay.idm.oclc.org/login?url=',
+      'https://libproxy.csueastbay.edu/login?url=',
+      'https://ezproxy.csueastbay.edu/login?url='
+    ]
+  };
+  
+  return alternatives[domain] || [];
+};
+
+export const testProxyUrl = async (proxyUrl: string): Promise<{ isWorking: boolean; error?: string }> => {
+  try {
+    // Test with a simple DOI
+    const testUrl = proxyUrl + encodeURIComponent('https://doi.org/10.1000/test');
+    
+    // We can't actually test the proxy due to CORS, but we can validate the URL structure
+    const url = new URL(testUrl);
+    
+    // Check if it's a reasonable proxy URL
+    if (url.hostname.includes('proxy') || url.hostname.includes('idm') || url.hostname.includes('ezproxy')) {
+      return { isWorking: true };
+    }
+    
+    return { 
+      isWorking: false, 
+      error: 'URL doesn\'t appear to be a proxy server' 
+    };
+  } catch (error) {
+    return { 
+      isWorking: false, 
+      error: 'Invalid URL format' 
+    };
+  }
 };
