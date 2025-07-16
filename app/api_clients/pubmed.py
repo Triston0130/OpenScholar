@@ -50,10 +50,10 @@ class PubMedClient(BaseAPIClient):
             }
             
             fetch_response = await self.client.get(self.fetch_url, params=fetch_params)
-            return self._parse_response(fetch_response.text)
+            return await self._parse_response(fetch_response.text)
             
         except Exception as e:
-            self.logger.error(f"PubMed search error: {str(e)}")
+            print(f"PubMed search error: {str(e)}")
             return []
     
     def _build_query(self, query: str, discipline: Optional[str], education_level: Optional[str]) -> str:
@@ -79,7 +79,45 @@ class PubMedClient(BaseAPIClient):
         
         return " AND ".join(terms)
     
-    def _parse_response(self, xml_text: str) -> List[Paper]:
+    async def _get_citation_count(self, doi: Optional[str], pmid: Optional[str]) -> Optional[int]:
+        """Get citation count from Europe PMC using DOI or PMID"""
+        if not doi and not pmid:
+            return None
+        
+        try:
+            # Build query for Europe PMC
+            query_parts = []
+            if doi:
+                query_parts.append(f'DOI:"{doi}"')
+            if pmid:
+                query_parts.append(f'EXT_ID:{pmid}')
+            
+            query = " OR ".join(query_parts)
+            
+            params = {
+                "query": query,
+                "format": "json",
+                "pageSize": 1,
+                "resultType": "core"
+            }
+            
+            response = await self.client.get(
+                "https://www.ebi.ac.uk/europepmc/webservices/rest/search",
+                params=params
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("resultList", {}).get("result"):
+                    result = data["resultList"]["result"][0]
+                    return result.get("citedByCount")
+        except Exception as e:
+            # Silently fail - citation count is optional
+            pass
+        
+        return None
+    
+    async def _parse_response(self, xml_text: str) -> List[Paper]:
         """Parse PubMed XML response"""
         papers = []
         
@@ -151,6 +189,11 @@ class PubMedClient(BaseAPIClient):
                     if not pmc_id:
                         continue
                     
+                    # Try to get citation count from Europe PMC if we have DOI or PMID
+                    citation_count = None
+                    if doi or pmid:
+                        citation_count = await self._get_citation_count(doi, pmid)
+                    
                     paper = Paper(
                         title=title,
                         authors=authors if authors else ["Unknown"],
@@ -159,17 +202,18 @@ class PubMedClient(BaseAPIClient):
                         source="PubMed",
                         full_text_url=full_text_url,
                         doi=doi,
-                        journal=journal
+                        journal=journal,
+                        citation_count=citation_count
                     )
                     
                     papers.append(paper)
                     
                 except Exception as e:
-                    self.logger.error(f"Error parsing PubMed article: {str(e)}")
+                    print(f"Error parsing PubMed article: {str(e)}")
                     continue
             
         except Exception as e:
-            self.logger.error(f"Error parsing PubMed XML: {str(e)}")
+            print(f"Error parsing PubMed XML: {str(e)}")
         
         return papers
     

@@ -135,7 +135,8 @@ class PMCClient(BaseAPIClient):
                 source="PubMed Central",
                 full_text_url=full_text_url,
                 doi=doi,
-                journal=journal
+                journal=journal,
+                citation_count=raw_paper.get("citedByCount")
             )
         except Exception as e:
             logger.error(f"Error normalizing PMC paper: {e}")
