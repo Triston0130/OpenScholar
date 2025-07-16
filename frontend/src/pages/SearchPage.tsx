@@ -154,7 +154,11 @@ const SearchPage: React.FC = () => {
                 {/* Results Grid */}
                 <div className="grid gap-6">
                   {papers.map((paper, index) => (
-                    <ResultCard key={index} paper={paper} />
+                    <ResultCard 
+                      key={index} 
+                      paper={paper} 
+                      searchQuery={currentSearchRequest?.query}
+                    />
                   ))}
                 </div>
                 
