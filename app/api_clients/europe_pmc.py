@@ -83,15 +83,9 @@ class EuropePMCClient(BaseAPIClient):
             return []
     
     def normalize_paper(self, raw_paper: Dict[str, Any]) -> Optional[Paper]:
-        """Normalize Europe PMC response to Paper model"""
+        """Normalize Europe PMC response to Paper model - only return papers with full text"""
         try:
-            # Extract authors
-            authors = []
-            if "authorString" in raw_paper and raw_paper["authorString"]:
-                # Split by comma and clean up
-                authors = [author.strip() for author in raw_paper["authorString"].split(",")]
-            
-            # Get full text URL
+            # Get full text URL - only include papers with full text
             full_text_url = None
             if "fullTextUrlList" in raw_paper and raw_paper["fullTextUrlList"]:
                 url_list = raw_paper["fullTextUrlList"].get("fullTextUrl", [])
@@ -101,6 +95,16 @@ class EuropePMCClient(BaseAPIClient):
             # Alternative: Check if PMC ID exists and construct URL
             if not full_text_url and raw_paper.get("pmcid"):
                 full_text_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{raw_paper['pmcid']}/"
+            
+            # Skip if no full text available
+            if not full_text_url:
+                return None
+            
+            # Extract authors
+            authors = []
+            if "authorString" in raw_paper and raw_paper["authorString"]:
+                # Split by comma and clean up
+                authors = [author.strip() for author in raw_paper["authorString"].split(",")]
             
             # Get abstract
             abstract = raw_paper.get("abstractText", "")

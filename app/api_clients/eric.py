@@ -81,8 +81,19 @@ class ERICClient(BaseAPIClient):
             return []
     
     def normalize_paper(self, raw_paper: Dict[str, Any]) -> Optional[Paper]:
-        """Normalize ERIC response to Paper model"""
+        """Normalize ERIC response to Paper model - only return papers with full text"""
         try:
+            # Get full text URL - only include papers with full text
+            full_text_url = None
+            if raw_paper.get("url"):
+                full_text_url = raw_paper["url"]
+            elif raw_paper.get("sourceurl"):
+                full_text_url = raw_paper["sourceurl"]
+            
+            # Skip if no full text URL available
+            if not full_text_url:
+                return None
+            
             # Extract authors
             authors = []
             if "author" in raw_paper and raw_paper["author"]:
@@ -90,13 +101,6 @@ class ERICClient(BaseAPIClient):
                     authors = [str(author).strip() for author in raw_paper["author"]]
                 else:
                     authors = [author.strip() for author in str(raw_paper["author"]).split(";")]
-            
-            # Get full text URL
-            full_text_url = None
-            if raw_paper.get("url"):
-                full_text_url = raw_paper["url"]
-            elif raw_paper.get("sourceurl"):
-                full_text_url = raw_paper["sourceurl"]
             
             return Paper(
                 title=raw_paper.get("title", "").strip(),

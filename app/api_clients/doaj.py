@@ -77,9 +77,21 @@ class DOAJClient(BaseAPIClient):
             return []
     
     def normalize_paper(self, raw_paper: Dict[str, Any]) -> Optional[Paper]:
-        """Normalize DOAJ response to Paper model"""
+        """Normalize DOAJ response to Paper model - only return papers with full text"""
         try:
             bibjson = raw_paper.get("bibjson", {})
+            
+            # Get full text URL - only include papers with full text
+            full_text_url = None
+            if "link" in bibjson:
+                for link in bibjson["link"]:
+                    if link.get("type") == "fulltext":
+                        full_text_url = link.get("url")
+                        break
+            
+            # Skip if no full text available
+            if not full_text_url:
+                return None
             
             # Extract authors
             authors = []
@@ -88,14 +100,6 @@ class DOAJClient(BaseAPIClient):
                     name = author.get("name", "")
                     if name:
                         authors.append(name)
-            
-            # Get full text URL
-            full_text_url = None
-            if "link" in bibjson:
-                for link in bibjson["link"]:
-                    if link.get("type") == "fulltext":
-                        full_text_url = link.get("url")
-                        break
             
             # Get DOI
             doi = None

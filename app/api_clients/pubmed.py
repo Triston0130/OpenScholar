@@ -136,30 +136,20 @@ class PubMedClient(BaseAPIClient):
                         if article_id.get("IdType") == "doi":
                             doi = article_id.text
                     
-                    # Try to get the best full-text URL
+                    # Only include papers with full-text PDFs available
                     full_text_url = None
                     pmc_id = None
                     
-                    # First priority: PMC full-text
+                    # Check for PMC full-text (guaranteed PDFs)
                     for article_id in article.findall(".//ArticleId"):
                         if article_id.get("IdType") == "pmc":
                             pmc_id = article_id.text.replace("PMC", "")  # Remove PMC prefix if present
                             full_text_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{pmc_id}/"
                             break
                     
-                    # Second priority: DOI link (often leads to full text)
-                    if not full_text_url and doi:
-                        full_text_url = f"https://doi.org/{doi}"
-                    
-                    # Third priority: Publisher URL from linkout
-                    if not full_text_url:
-                        linkout = medline.find(".//LinkOut/Link/Url")
-                        if linkout is not None and linkout.text:
-                            full_text_url = linkout.text
-                    
-                    # Last resort: PubMed abstract page
-                    if not full_text_url:
-                        full_text_url = f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
+                    # If no PMC ID (no guaranteed full-text), skip this paper
+                    if not pmc_id:
+                        continue
                     
                     paper = Paper(
                         title=title,

@@ -38,11 +38,18 @@ class SemanticScholarClient(BaseAPIClient):
                 if pub_types and not any(t in ["JournalArticle", "Conference"] for t in pub_types):
                     continue
                 
+                # Only include papers with DOI (more likely to have full text access)
+                if not item.get("doi"):
+                    continue
+                
                 # Extract authors
                 authors = []
                 for author in item.get("authors", []):
                     if author.get("name"):
                         authors.append(author["name"])
+                
+                # Use DOI link which often leads to full text
+                full_text_url = f"https://doi.org/{item.get('doi')}"
                 
                 paper = Paper(
                     title=item.get("title", ""),
@@ -50,7 +57,7 @@ class SemanticScholarClient(BaseAPIClient):
                     abstract=item.get("abstract", "No abstract available"),
                     year=str(item.get("year", "2000")),
                     source="Semantic Scholar",
-                    full_text_url=item.get("url", ""),
+                    full_text_url=full_text_url,
                     doi=item.get("doi"),
                     journal=item.get("venue", "")
                 )

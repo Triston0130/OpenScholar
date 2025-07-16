@@ -67,19 +67,19 @@ class COREClient(BaseAPIClient):
             return []
     
     def normalize_paper(self, raw_paper: Dict[str, Any]) -> Optional[Paper]:
-        """Normalize CORE response to Paper model"""
+        """Normalize CORE response to Paper model - only return papers with full PDFs"""
         try:
+            # Only include papers with downloadable PDFs
+            if not raw_paper.get("downloadUrl"):
+                return None
+            
             # Extract authors
             authors = []
             if "authors" in raw_paper and raw_paper["authors"]:
                 authors = [author.get("name", "") for author in raw_paper["authors"] if author.get("name")]
             
-            # Get full text URL
-            full_text_url = None
-            if raw_paper.get("downloadUrl"):
-                full_text_url = raw_paper["downloadUrl"]
-            elif raw_paper.get("links") and len(raw_paper["links"]) > 0:
-                full_text_url = raw_paper["links"][0]
+            # Get full text URL (guaranteed to exist due to check above)
+            full_text_url = raw_paper["downloadUrl"]
             
             # Get abstract
             abstract = raw_paper.get("abstract", "")
