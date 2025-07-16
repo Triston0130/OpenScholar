@@ -220,7 +220,6 @@ MIT License - see LICENSE file for details.
 
 ## Notes
 
-- Results are limited to 50 papers per search
 - Only peer-reviewed papers are returned (when filterable by the API)
 - Papers are deduplicated by DOI and normalized title
 - Results are sorted by year (newest first)
