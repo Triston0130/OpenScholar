@@ -103,7 +103,7 @@ export const addPaperToCollection = (paper: Paper, collectionId: string): void =
   };
   
   // Check if already in collection
-  const isAlreadySaved = data.papers[collectionId].some(p => 
+  const isAlreadySaved = data.papers[collectionId].some((p: SavedPaper) => 
     (paper.doi && p.doi === paper.doi) || p.title === paper.title
   );
   
@@ -147,7 +147,7 @@ export const getCollectionPapers = (collectionId: string): SavedPaper[] => {
 
 export const isPaperInCollection = (paper: Paper, collectionId: string): boolean => {
   const papers = getCollectionPapers(collectionId);
-  return papers.some(p => 
+  return papers.some((p: SavedPaper) => 
     (paper.doi && p.doi === paper.doi) || p.title === paper.title
   );
 };
