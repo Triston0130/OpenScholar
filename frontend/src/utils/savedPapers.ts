@@ -5,6 +5,7 @@ const SAVED_PAPERS_KEY = 'openscholar_saved_papers';
 export interface SavedPaper extends Paper {
   savedAt: string;
   tags?: string[];
+  notes?: string;
 }
 
 export const getSavedPapers = (): SavedPaper[] => {

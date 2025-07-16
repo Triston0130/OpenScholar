@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getSavedPapers, exportSavedPapers, unsavePaper, SavedPaper } from '../utils/savedPapers';
+import { getSavedPapers, exportSavedPapers, unsavePaper } from '../utils/savedPapers';
+import { SavedPaper } from '../utils/collections';
 import ResultCard from './ResultCard';
 
 interface SavedCollectionProps {
