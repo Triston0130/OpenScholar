@@ -75,13 +75,13 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
     }
   };
 
-  const handleExport = (collectionId: string, format: 'bibtex' | 'pdf-list' | 'summary') => {
+  const handleExport = (collectionId: string, format: 'bibtex' | 'pdf-list' | 'summary' | 'apa' | 'mla' | 'chicago') => {
     const collection = collections.find(c => c.id === collectionId);
     if (!collection) return;
 
     const content = exportCollection(collectionId, format);
     const filename = `${collection.name.replace(/[^a-zA-Z0-9]/g, '_')}_${format}_${new Date().toISOString().split('T')[0]}`;
-    const fileExtension = format === 'bibtex' ? 'bib' : 'md';
+    const fileExtension = format === 'bibtex' ? 'bib' : 'txt';
     
     // Create and download file
     const blob = new Blob([content], { type: 'text/plain' });
@@ -261,6 +261,37 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                       >
                                         📊 Export Summary
+                                      </button>
+                                      <div className="border-t my-1"></div>
+                                      <div className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                        Citation Formats
+                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleExport(collection.id, 'apa');
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      >
+                                        📝 APA Citations
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleExport(collection.id, 'mla');
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      >
+                                        📝 MLA Citations
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleExport(collection.id, 'chicago');
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      >
+                                        📝 Chicago Citations
                                       </button>
                                       <div className="border-t my-1"></div>
                                       <button

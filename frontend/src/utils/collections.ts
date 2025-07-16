@@ -1,4 +1,5 @@
 import { Paper } from '../types';
+import { exportCitations } from './citationFormatter';
 
 const COLLECTIONS_KEY = 'openscholar_collections';
 
@@ -189,7 +190,7 @@ export const getCollectionStats = (collectionId: string) => {
 };
 
 // Export functionality per collection
-export const exportCollection = (collectionId: string, format: 'bibtex' | 'pdf-list' | 'summary'): string => {
+export const exportCollection = (collectionId: string, format: 'bibtex' | 'pdf-list' | 'summary' | 'apa' | 'mla' | 'chicago'): string => {
   const collection = getCollections().find((c: Collection) => c.id === collectionId);
   const papers = getCollectionPapers(collectionId);
   
@@ -202,6 +203,12 @@ export const exportCollection = (collectionId: string, format: 'bibtex' | 'pdf-l
       return generatePDFList(papers, collection.name);
     case 'summary':
       return generateCollectionSummary(collection, papers);
+    case 'apa':
+      return exportCitations(papers, 'apa', collection.name);
+    case 'mla':
+      return exportCitations(papers, 'mla', collection.name);
+    case 'chicago':
+      return exportCitations(papers, 'chicago', collection.name);
     default:
       return '';
   }

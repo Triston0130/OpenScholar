@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Paper } from '../types';
 import { getPaperCollections, addPaperToCollection, removePaperFromCollection } from '../utils/collections';
+import { formatCitation } from '../utils/citationFormatter';
 import CollectionSelector from './CollectionSelector';
 
 interface ResultCardProps {
@@ -100,21 +101,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
   };
 
   const generateCitation = (format: 'apa' | 'mla' | 'chicago') => {
-    const authors = paper.authors.join(', ');
-    const year = paper.year;
-    const title = paper.title;
-    const journal = paper.journal || paper.source;
-    
-    switch (format) {
-      case 'apa':
-        return `${authors} (${year}). ${title}. ${journal}.`;
-      case 'mla':
-        return `${authors}. "${title}." ${journal}, ${year}.`;
-      case 'chicago':
-        return `${authors}. "${title}." ${journal} (${year}).`;
-      default:
-        return `${authors} (${year}). ${title}. ${journal}.`;
-    }
+    return formatCitation(paper, format);
   };
 
   const copyCitation = (format: 'apa' | 'mla' | 'chicago') => {
