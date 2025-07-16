@@ -4,10 +4,10 @@ import SearchForm from '../components/SearchForm';
 import ResultCard from '../components/ResultCard';
 import ExportBar from '../components/ExportBar';
 import Pagination from '../components/Pagination';
-import SavedCollection from '../components/SavedCollection';
+import CollectionsOverview from '../components/CollectionsOverview';
 import { Paper, SearchRequest } from '../types';
 import { searchPapers, exportPapers, downloadFile } from '../utils/api';
-import { getSavedPapers } from '../utils/savedPapers';
+import { getAllCollectionsWithPapers } from '../utils/collections';
 
 const SearchPage: React.FC = () => {
   const [papers, setPapers] = useState<Paper[]>([]);
@@ -20,23 +20,23 @@ const SearchPage: React.FC = () => {
   const [perPage, setPerPage] = useState(20);
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'oldest'>('relevance');
   const [currentSearchRequest, setCurrentSearchRequest] = useState<SearchRequest | null>(null);
-  const [showSavedCollection, setShowSavedCollection] = useState(false);
-  const [savedCount, setSavedCount] = useState(0);
+  const [showCollections, setShowCollections] = useState(false);
+  const [totalSavedCount, setTotalSavedCount] = useState(0);
 
   useEffect(() => {
     updateSavedCount();
-    // Listen for saved papers changes
-    const handleSavedPapersChange = () => updateSavedCount();
-    window.addEventListener('savedPapersChanged', handleSavedPapersChange);
-    window.addEventListener('storage', handleSavedPapersChange);
+    // Listen for collections changes
+    const handleCollectionsChange = () => updateSavedCount();
+    window.addEventListener('collectionsChanged', handleCollectionsChange);
     return () => {
-      window.removeEventListener('savedPapersChanged', handleSavedPapersChange);
-      window.removeEventListener('storage', handleSavedPapersChange);
+      window.removeEventListener('collectionsChanged', handleCollectionsChange);
     };
   }, []);
 
   const updateSavedCount = () => {
-    setSavedCount(getSavedPapers().length);
+    const collections = getAllCollectionsWithPapers();
+    const totalCount = collections.reduce((sum, collection) => sum + collection.papers.length, 0);
+    setTotalSavedCount(totalCount);
   };
 
   const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
@@ -127,8 +127,8 @@ const SearchPage: React.FC = () => {
     }
   };
 
-  if (showSavedCollection) {
-    return <SavedCollection onBackToSearch={() => setShowSavedCollection(false)} />;
+  if (showCollections) {
+    return <CollectionsOverview onBackToSearch={() => setShowCollections(false)} />;
   }
 
   return (
@@ -151,16 +151,16 @@ const SearchPage: React.FC = () => {
             {/* Navigation */}
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => setShowSavedCollection(true)}
+                onClick={() => setShowCollections(true)}
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-                📁 Collection
-                {savedCount > 0 && (
+                📚 Collections
+                {totalSavedCount > 0 && (
                   <span className="ml-1 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                    {savedCount}
+                    {totalSavedCount}
                   </span>
                 )}
               </button>

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Paper } from '../types';
-import { savePaper, unsavePaper, isPaperSaved } from '../utils/savedPapers';
+import { getPaperCollections, addPaperToCollection, removePaperFromCollection } from '../utils/collections';
+import CollectionSelector from './CollectionSelector';
 
 interface ResultCardProps {
   paper: Paper;
@@ -10,12 +11,26 @@ interface ResultCardProps {
 const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCitationMenu, setShowCitationMenu] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [showCollectionSelector, setShowCollectionSelector] = useState(false);
+  const [paperCollections, setPaperCollections] = useState<any[]>([]);
   const citationMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsSaved(isPaperSaved(paper));
+    updatePaperCollections();
   }, [paper]);
+
+  useEffect(() => {
+    const handleCollectionsChange = () => {
+      updatePaperCollections();
+    };
+
+    window.addEventListener('collectionsChanged', handleCollectionsChange);
+    return () => window.removeEventListener('collectionsChanged', handleCollectionsChange);
+  }, [paper]);
+
+  const updatePaperCollections = () => {
+    setPaperCollections(getPaperCollections(paper));
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -110,14 +125,14 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
     });
   };
 
-  const handleSaveToggle = () => {
-    if (isSaved) {
-      unsavePaper(paper);
-      setIsSaved(false);
-    } else {
-      savePaper(paper);
-      setIsSaved(true);
-    }
+  const handleSaveToCollection = (collectionId: string) => {
+    addPaperToCollection(paper, collectionId);
+    updatePaperCollections();
+  };
+
+  const handleRemoveFromCollection = (collectionId: string) => {
+    removePaperFromCollection(paper, collectionId);
+    updatePaperCollections();
   };
 
   return (
@@ -141,18 +156,18 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
         <div className="flex items-center gap-2">
           {/* Save to Collection Button */}
           <button
-            onClick={handleSaveToggle}
+            onClick={() => setShowCollectionSelector(true)}
             className={`flex items-center px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-              isSaved
-                ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200'
+              paperCollections.length > 0
+                ? 'text-blue-700 bg-blue-100 hover:bg-blue-200'
                 : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
             }`}
-            title={isSaved ? 'Remove from collection' : 'Save to collection'}
+            title={paperCollections.length > 0 ? `Saved in ${paperCollections.length} collection(s)` : 'Save to collection'}
           >
-            <svg className="w-4 h-4 mr-1" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            <svg className="w-4 h-4 mr-1" fill={paperCollections.length > 0 ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            {isSaved ? 'Saved' : 'Save'}
+            {paperCollections.length > 0 ? `Saved (${paperCollections.length})` : 'Save'}
           </button>
 
           {/* Copy Citation Dropdown */}
@@ -285,6 +300,15 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
           </a>
         )}
       </div>
+
+      {/* Collection Selector Modal */}
+      <CollectionSelector
+        isOpen={showCollectionSelector}
+        onClose={() => setShowCollectionSelector(false)}
+        paper={paper}
+        onSaveToCollection={handleSaveToCollection}
+        onRemoveFromCollection={handleRemoveFromCollection}
+      />
     </div>
   );
 };
