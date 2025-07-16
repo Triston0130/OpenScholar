@@ -48,6 +48,12 @@ class ExportRequest(BaseModel):
     format: str = Field(..., pattern="^(csv|json|bib)$")
     
     class Config:
+        json_schema_extra = {
+            "example": {
+                "format": "csv",
+                "papers": []
+            }
+        }
 
 class ExternalPaperRequest(BaseModel):
     doi: str = Field(..., description="DOI of the paper to fetch")
