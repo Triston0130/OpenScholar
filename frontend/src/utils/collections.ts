@@ -90,7 +90,12 @@ export const deleteCollection = (id: string): void => {
 };
 
 // Paper Management
-export const addPaperToCollection = (paper: Paper, collectionId: string): void => {
+export const addPaperToCollection = (
+  paper: Paper, 
+  collectionId: string, 
+  tags: string[] = [], 
+  notes: string = ''
+): void => {
   const data = getCollectionsData();
   
   if (!data.papers[collectionId]) {
@@ -100,7 +105,8 @@ export const addPaperToCollection = (paper: Paper, collectionId: string): void =
   const savedPaper: SavedPaper = {
     ...paper,
     savedAt: new Date().toISOString(),
-    tags: []
+    tags: tags,
+    notes: notes
   };
   
   // Check if already in collection
@@ -139,6 +145,53 @@ export const removePaperFromCollection = (paper: Paper, collectionId: string): v
     saveCollectionsData(data);
     dispatchCollectionsChange();
   }
+};
+
+export const updatePaperTagsAndNotes = (
+  paper: Paper, 
+  collectionId: string, 
+  tags: string[], 
+  notes: string
+): void => {
+  const data = getCollectionsData();
+  
+  if (data.papers[collectionId]) {
+    const paperIndex = data.papers[collectionId].findIndex((p: SavedPaper) => 
+      (paper.doi && p.doi === paper.doi) || p.title === paper.title
+    );
+    
+    if (paperIndex !== -1) {
+      data.papers[collectionId][paperIndex] = {
+        ...data.papers[collectionId][paperIndex],
+        tags: tags,
+        notes: notes
+      };
+      
+      // Update collection timestamp
+      const collection = data.collections.find((c: Collection) => c.id === collectionId);
+      if (collection) {
+        collection.updatedAt = new Date().toISOString();
+      }
+      
+      saveCollectionsData(data);
+      dispatchCollectionsChange();
+    }
+  }
+};
+
+export const getAllTags = (): string[] => {
+  const data = getCollectionsData();
+  const allTags = new Set<string>();
+  
+  Object.values(data.papers).forEach((papers: SavedPaper[]) => {
+    papers.forEach((paper: SavedPaper) => {
+      if (paper.tags) {
+        paper.tags.forEach((tag: string) => allTags.add(tag));
+      }
+    });
+  });
+  
+  return Array.from(allTags).sort();
 };
 
 export const getCollectionPapers = (collectionId: string): SavedPaper[] => {

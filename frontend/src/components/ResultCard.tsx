@@ -112,8 +112,8 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
     });
   };
 
-  const handleSaveToCollection = (collectionId: string) => {
-    addPaperToCollection(paper, collectionId);
+  const handleSaveToCollection = (collectionId: string, tags?: string[], notes?: string) => {
+    addPaperToCollection(paper, collectionId, tags, notes);
     updatePaperCollections();
   };
 

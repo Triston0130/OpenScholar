@@ -187,10 +187,52 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
           {savedPapers.map((paper, index) => (
             <div key={`${paper.doi || paper.title}-${index}`} className="relative">
               <ResultCard paper={paper} />
-              <div className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-full px-2 py-1">
-                <span className="text-xs text-gray-500">
+              
+              {/* Tags and Notes Overlay */}
+              <div className="absolute top-4 right-4 bg-white bg-opacity-95 rounded-lg p-3 shadow-sm border border-gray-200 max-w-xs">
+                <div className="text-xs text-gray-500 mb-2">
                   Saved {new Date(paper.savedAt).toLocaleDateString()}
-                </span>
+                </div>
+                
+                {/* Tags */}
+                {paper.tags && paper.tags.length > 0 && (
+                  <div className="mb-2">
+                    <div className="flex flex-wrap gap-1">
+                      {paper.tags.map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Notes */}
+                {paper.notes && paper.notes.trim() && (
+                  <div className="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200">
+                    <div className="font-medium text-yellow-800 mb-1 flex items-center">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                      </svg>
+                      Note:
+                    </div>
+                    <div className="text-gray-600 line-clamp-3">{paper.notes}</div>
+                  </div>
+                )}
+                
+                {/* Edit button */}
+                <button
+                  onClick={() => {/* TODO: Add edit functionality */}}
+                  className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center"
+                >
+                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit tags & notes
+                </button>
               </div>
             </div>
           ))}
