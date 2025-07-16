@@ -282,7 +282,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
                 : 'text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200'
             }`}
             title={link.type === 'free' ? 'Open access - free to read' : 
-                   link.type === 'university' ? 'Access through your university subscription' : 
+                   link.type === 'university' ? 'This link will open through your campus library proxy' : 
                    'Publisher access (may require subscription)'}
           >
             <span className="mr-1.5">{link.icon}</span>

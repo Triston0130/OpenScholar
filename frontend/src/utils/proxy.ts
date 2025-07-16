@@ -77,11 +77,12 @@ export const generateAccessLinks = (paper: { doi?: string; full_text_url?: strin
     const doiUrl = paper.doi.startsWith('http') ? paper.doi : `https://doi.org/${paper.doi}`;
     const proxiedUrl = generateProxyUrl(doiUrl);
     
+    const institutionName = settings.institutionName || 'University';
     links.push({
       type: 'university',
       url: proxiedUrl,
-      label: settings.institutionName ? `${settings.institutionName} Access` : 'University Access',
-      icon: '🏫',
+      label: `${institutionName} Access`,
+      icon: '🔐',
       priority: 2
     });
   }
@@ -107,24 +108,97 @@ export const getBestAccessLink = (paper: { doi?: string; full_text_url?: string 
   return links.length > 0 ? links[0] : null;
 };
 
-export const validateProxyUrl = (url: string): { isValid: boolean; error?: string } => {
+export const autoCorrectProxyUrl = (url: string): string => {
+  if (!url.trim()) return url;
+  
+  let corrected = url.trim();
+  
+  // Auto-add https:// if missing protocol
+  if (!corrected.startsWith('http://') && !corrected.startsWith('https://')) {
+    corrected = 'https://' + corrected;
+  }
+  
+  // Ensure it ends with proper parameter format
+  if (!corrected.includes('?url=') && !corrected.includes('&url=')) {
+    if (corrected.endsWith('?') || corrected.endsWith('&')) {
+      corrected += 'url=';
+    } else if (corrected.includes('?')) {
+      corrected += '&url=';
+    } else {
+      corrected += '?url=';
+    }
+  }
+  
+  return corrected;
+};
+
+export const validateProxyUrl = (url: string): { isValid: boolean; error?: string; corrected?: string } => {
   if (!url.trim()) {
     return { isValid: false, error: 'Proxy URL is required' };
   }
   
+  const corrected = autoCorrectProxyUrl(url);
+  
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(corrected);
     if (!parsed.protocol.startsWith('http')) {
       return { isValid: false, error: 'Proxy URL must start with http:// or https://' };
     }
     
     // Check if it looks like a proxy URL
-    if (!url.includes('login') && !url.includes('proxy')) {
-      return { isValid: false, error: 'URL should contain "login" or "proxy"' };
+    if (!corrected.includes('login') && !corrected.includes('proxy')) {
+      return { 
+        isValid: false, 
+        error: 'URL should contain "login" or "proxy" to be a valid proxy URL' 
+      };
     }
     
-    return { isValid: true };
+    // Check for proper URL parameter format
+    if (!corrected.includes('?url=') && !corrected.includes('&url=')) {
+      return { 
+        isValid: false, 
+        error: 'URL should end with "?url=" or "&url=" parameter' 
+      };
+    }
+    
+    return { 
+      isValid: true, 
+      corrected: corrected !== url ? corrected : undefined 
+    };
   } catch (error) {
     return { isValid: false, error: 'Invalid URL format' };
   }
+};
+
+// Known university proxy patterns for auto-detection
+export const getKnownProxyPatterns = (): { [domain: string]: string } => {
+  return {
+    // California State Universities
+    'csus.edu': 'https://libproxy.csus.edu/login?url=',
+    'csulb.edu': 'https://libproxy.csulb.edu/login?url=',
+    'csueastbay.edu': 'https://libproxy.csueastbay.edu/login?url=',
+    'csufresno.edu': 'https://libproxy.csufresno.edu/login?url=',
+    
+    // University of California
+    'ucla.edu': 'https://ucla.idm.oclc.org/login?url=',
+    'berkeley.edu': 'https://berkeley.idm.oclc.org/login?url=',
+    'ucsd.edu': 'https://ucsd.idm.oclc.org/login?url=',
+    'uci.edu': 'https://uci.idm.oclc.org/login?url=',
+    
+    // Common patterns
+    'harvard.edu': 'https://harvard.idm.oclc.org/login?url=',
+    'stanford.edu': 'https://stanford.idm.oclc.org/login?url=',
+    'mit.edu': 'https://mit.idm.oclc.org/login?url=',
+    'yale.edu': 'https://yale.idm.oclc.org/login?url=',
+    'princeton.edu': 'https://princeton.idm.oclc.org/login?url=',
+  };
+};
+
+export const suggestProxyUrl = (email: string): string | null => {
+  if (!email.includes('@')) return null;
+  
+  const domain = email.split('@')[1];
+  const patterns = getKnownProxyPatterns();
+  
+  return patterns[domain] || null;
 };

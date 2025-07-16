@@ -9,6 +9,7 @@ import SettingsModal from '../components/SettingsModal';
 import { Paper, SearchRequest } from '../types';
 import { searchPapers, exportPapers, downloadFile } from '../utils/api';
 import { getAllCollectionsWithPapers } from '../utils/collections';
+import { getProxySettings } from '../utils/proxy';
 
 const SearchPage: React.FC = () => {
   const [papers, setPapers] = useState<Paper[]>([]);
@@ -24,14 +25,19 @@ const SearchPage: React.FC = () => {
   const [showCollections, setShowCollections] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [totalSavedCount, setTotalSavedCount] = useState(0);
+  const [proxySettings, setProxySettings] = useState(getProxySettings());
 
   useEffect(() => {
     updateSavedCount();
     // Listen for collections changes
     const handleCollectionsChange = () => updateSavedCount();
+    const handleProxySettingsChange = () => setProxySettings(getProxySettings());
+    
     window.addEventListener('collectionsChanged', handleCollectionsChange);
+    window.addEventListener('proxySettingsChanged', handleProxySettingsChange);
     return () => {
       window.removeEventListener('collectionsChanged', handleCollectionsChange);
+      window.removeEventListener('proxySettingsChanged', handleProxySettingsChange);
     };
   }, []);
 
@@ -202,6 +208,38 @@ const SearchPage: React.FC = () => {
           <div className="mb-8">
             {papers.length > 0 ? (
               <>
+                {/* Proxy Status Indicator */}
+                {proxySettings.enabled && proxySettings.proxyUrl && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-blue-800">
+                          🔐 University access enabled
+                        </p>
+                        <p className="text-xs text-blue-600">
+                          {proxySettings.institutionName ? 
+                            `Accessing through ${proxySettings.institutionName} proxy` : 
+                            'Accessing through your institution\'s proxy'
+                          }
+                        </p>
+                      </div>
+                      <div className="ml-auto">
+                        <button
+                          onClick={() => setShowSettings(true)}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          Configure
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Results Summary */}
                 <div className="mb-6">
                   <div className="flex justify-between items-start mb-4">
