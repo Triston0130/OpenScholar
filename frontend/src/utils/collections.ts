@@ -67,7 +67,7 @@ export const createCollection = (name: string, description?: string, color?: str
 
 export const updateCollection = (id: string, updates: Partial<Collection>): void => {
   const data = getCollectionsData();
-  const index = data.collections.findIndex(c => c.id === id);
+  const index = data.collections.findIndex((c: Collection) => c.id === id);
   if (index !== -1) {
     data.collections[index] = {
       ...data.collections[index],
@@ -82,7 +82,7 @@ export const deleteCollection = (id: string): void => {
   if (id === 'default') return; // Can't delete default collection
   
   const data = getCollectionsData();
-  data.collections = data.collections.filter(c => c.id !== id);
+  data.collections = data.collections.filter((c: Collection) => c.id !== id);
   delete data.papers[id];
   saveCollectionsData(data);
   dispatchCollectionsChange();
@@ -111,7 +111,7 @@ export const addPaperToCollection = (paper: Paper, collectionId: string): void =
     data.papers[collectionId].unshift(savedPaper);
     
     // Update collection timestamp
-    const collection = data.collections.find(c => c.id === collectionId);
+    const collection = data.collections.find((c: Collection) => c.id === collectionId);
     if (collection) {
       collection.updatedAt = new Date().toISOString();
     }
@@ -125,12 +125,12 @@ export const removePaperFromCollection = (paper: Paper, collectionId: string): v
   const data = getCollectionsData();
   
   if (data.papers[collectionId]) {
-    data.papers[collectionId] = data.papers[collectionId].filter(p => 
+    data.papers[collectionId] = data.papers[collectionId].filter((p: SavedPaper) => 
       !((paper.doi && p.doi === paper.doi) || p.title === paper.title)
     );
     
     // Update collection timestamp
-    const collection = data.collections.find(c => c.id === collectionId);
+    const collection = data.collections.find((c: Collection) => c.id === collectionId);
     if (collection) {
       collection.updatedAt = new Date().toISOString();
     }
@@ -154,14 +154,14 @@ export const isPaperInCollection = (paper: Paper, collectionId: string): boolean
 
 export const getPaperCollections = (paper: Paper): Collection[] => {
   const collections = getCollections();
-  return collections.filter(collection => 
+  return collections.filter((collection: Collection) => 
     isPaperInCollection(paper, collection.id)
   );
 };
 
 export const getAllCollectionsWithPapers = (): CollectionWithPapers[] => {
   const collections = getCollections();
-  return collections.map(collection => ({
+  return collections.map((collection: Collection) => ({
     ...collection,
     papers: getCollectionPapers(collection.id)
   }));
@@ -180,17 +180,17 @@ export const getCollectionStats = (collectionId: string) => {
   
   return {
     totalPapers: papers.length,
-    papersWithPDFs: papers.filter(p => p.full_text_url).length,
+    papersWithPDFs: papers.filter((p: SavedPaper) => p.full_text_url).length,
     yearCounts,
     sourceCounts,
-    oldestPaper: papers.length > 0 ? Math.min(...papers.map(p => parseInt(p.year) || 9999)) : null,
-    newestPaper: papers.length > 0 ? Math.max(...papers.map(p => parseInt(p.year) || 0)) : null
+    oldestPaper: papers.length > 0 ? Math.min(...papers.map((p: SavedPaper) => parseInt(p.year) || 9999)) : null,
+    newestPaper: papers.length > 0 ? Math.max(...papers.map((p: SavedPaper) => parseInt(p.year) || 0)) : null
   };
 };
 
 // Export functionality per collection
 export const exportCollection = (collectionId: string, format: 'bibtex' | 'pdf-list' | 'summary'): string => {
-  const collection = getCollections().find(c => c.id === collectionId);
+  const collection = getCollections().find((c: Collection) => c.id === collectionId);
   const papers = getCollectionPapers(collectionId);
   
   if (!collection) return '';
@@ -246,7 +246,7 @@ const getRandomColor = (): string => {
 const generateBibTeX = (papers: SavedPaper[], collectionName: string): string => {
   const header = `% BibTeX export from OpenScholar\n% Collection: ${collectionName}\n% Generated: ${new Date().toLocaleDateString()}\n\n`;
   
-  const entries = papers.map(paper => {
+  const entries = papers.map((paper: SavedPaper) => {
     const key = paper.doi ? paper.doi.replace(/[^a-zA-Z0-9]/g, '') : 
                 paper.title.replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
     
@@ -267,13 +267,13 @@ const generateBibTeX = (papers: SavedPaper[], collectionName: string): string =>
 };
 
 const generatePDFList = (papers: SavedPaper[], collectionName: string): string => {
-  const pdfPapers = papers.filter(paper => paper.full_text_url);
+  const pdfPapers = papers.filter((paper: SavedPaper) => paper.full_text_url);
   
   return `# ${collectionName} - PDF Links
 
 ${pdfPapers.length} papers with full-text PDFs
 
-${pdfPapers.map((paper, index) => 
+${pdfPapers.map((paper: SavedPaper, index: number) => 
 `## ${index + 1}. ${paper.title}
 
 - **Authors:** ${paper.authors.join(', ')}
@@ -305,17 +305,17 @@ const generateCollectionSummary = (collection: Collection, papers: SavedPaper[])
 ## Papers by Year
 ${Object.entries(stats.yearCounts)
   .sort(([a], [b]) => Number(b) - Number(a))
-  .map(([year, count]) => `- ${year}: ${count} papers`)
+  .map(([year, count]: [string, number]) => `- ${year}: ${count} papers`)
   .join('\n')}
 
 ## Papers by Source
 ${Object.entries(stats.sourceCounts)
   .sort(([,a], [,b]) => b - a)
-  .map(([source, count]) => `- ${source}: ${count} papers`)
+  .map(([source, count]: [string, number]) => `- ${source}: ${count} papers`)
   .join('\n')}
 
 ## Recent Papers (Last 5 added)
-${papers.slice(0, 5).map((paper, index) => 
+${papers.slice(0, 5).map((paper: SavedPaper, index: number) => 
 `${index + 1}. **${paper.title}** (${paper.year})
    - Authors: ${paper.authors.slice(0, 3).join(', ')}${paper.authors.length > 3 ? ' et al.' : ''}
    - Added: ${new Date(paper.savedAt).toLocaleDateString()}
