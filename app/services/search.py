@@ -85,25 +85,25 @@ class SearchService:
         ))
         sources_queried.append("PubMed Central")
         
-        # PubMed search - temporarily disabled for debugging
-        # tasks.append(self.pubmed_client.search(
-        #     query=request.query,
-        #     year_start=request.year_start,
-        #     year_end=request.year_end,
-        #     discipline=request.discipline,
-        #     education_level=request.education_level
-        # ))
-        # sources_queried.append("PubMed")
+        # PubMed search
+        tasks.append(self.pubmed_client.search(
+            query=request.query,
+            year_start=request.year_start,
+            year_end=request.year_end,
+            discipline=request.discipline,
+            education_level=request.education_level
+        ))
+        sources_queried.append("PubMed")
         
-        # Semantic Scholar search - temporarily disabled for debugging
-        # tasks.append(self.semantic_scholar_client.search(
-        #     query=request.query,
-        #     year_start=request.year_start,
-        #     year_end=request.year_end,
-        #     discipline=request.discipline,
-        #     education_level=request.education_level
-        # ))
-        # sources_queried.append("Semantic Scholar")
+        # Semantic Scholar search
+        tasks.append(self.semantic_scholar_client.search(
+            query=request.query,
+            year_start=request.year_start,
+            year_end=request.year_end,
+            discipline=request.discipline,
+            education_level=request.education_level
+        ))
+        sources_queried.append("Semantic Scholar")
         
         # Execute all searches concurrently with timeout
         try:
@@ -121,7 +121,10 @@ class SearchService:
             if isinstance(result, Exception):
                 logger.error(f"Error from {sources_queried[i]}: {result}")
             elif result:
+                logger.info(f"Got {len(result)} results from {sources_queried[i]}")
                 all_papers.extend(result)
+            else:
+                logger.info(f"No results from {sources_queried[i]}")
         
         # Deduplicate papers
         deduplicated_papers = self._deduplicate_papers(all_papers)
