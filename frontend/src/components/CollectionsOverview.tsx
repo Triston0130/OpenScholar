@@ -334,13 +334,13 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-green-600">
-                        {selectedCollectionData.papers.filter(p => p.full_text_url).length}
+                        {selectedCollectionData.papers.filter((p: any) => p.full_text_url).length}
                       </div>
                       <div className="text-sm text-gray-500">With PDFs</div>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-purple-600">
-                        {new Set(selectedCollectionData.papers.map(p => p.source)).size}
+                        {new Set(selectedCollectionData.papers.map((p: any) => p.source)).size}
                       </div>
                       <div className="text-sm text-gray-500">Sources</div>
                     </div>
