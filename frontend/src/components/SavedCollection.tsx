@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getSavedPapers, exportSavedPapers, unsavePaper } from '../utils/savedPapers';
-import { SavedPaper, updatePaperTagsAndNotes, getAllTags } from '../utils/collections';
+import { SavedPaper, updatePaperTagsAndNotes, getAllTags, getCollectionPapers, getCollections } from '../utils/collections';
 import ResultCard from './ResultCard';
 
 interface SavedCollectionProps {
@@ -21,7 +20,14 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
   }, []);
 
   const loadSavedPapers = () => {
-    setSavedPapers(getSavedPapers());
+    // Get papers from the default collection
+    const collections = getCollections();
+    const defaultCollection = collections.find(c => c.id === 'default');
+    if (defaultCollection) {
+      setSavedPapers(getCollectionPapers('default'));
+    } else {
+      setSavedPapers([]);
+    }
     setAvailableTags(getAllTags());
   };
 
@@ -52,28 +58,17 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
   };
 
   const handleExport = (format: 'bibtex' | 'pdf-list' | 'summary') => {
-    const content = exportSavedPapers(format);
-    const filename = `openscholar_saved_${format}_${new Date().toISOString().split('T')[0]}`;
-    const fileExtension = format === 'bibtex' ? 'bib' : format === 'pdf-list' ? 'md' : 'md';
-    
-    // Create and download file
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filename}.${fileExtension}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
+    // For now, just show an alert - can implement export later
+    alert(`Export as ${format} coming soon!`);
     setShowExportMenu(false);
   };
 
   const handleClearAll = () => {
     if (window.confirm('Are you sure you want to remove all saved papers? This cannot be undone.')) {
-      localStorage.removeItem('openscholar_saved_papers');
-      setSavedPapers([]);
+      // Clear the default collection
+      const data = { collections: getCollections(), papers: { default: [] } };
+      localStorage.setItem('openscholar_collections', JSON.stringify(data));
+      loadSavedPapers();
     }
   };
 
@@ -274,7 +269,7 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
 
       {/* Edit Tags and Notes Modal */}
       {editingPaper && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b">
