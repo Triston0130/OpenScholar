@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllCollectionsWithPapers, deleteCollection, updateCollection, exportCollection, getCollectionStats, Collection } from '../utils/collections';
+import { getAllCollectionsWithPapers, deleteCollection, updateCollection, exportCollection, getCollectionStats, Collection, updatePaperTagsAndNotes, getAllTags, SavedPaper } from '../utils/collections';
 import CreateCollectionModal from './CreateCollectionModal';
 import ResultCard from './ResultCard';
 
@@ -15,6 +15,11 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
   const [editingCollection, setEditingCollection] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editingPaper, setEditingPaper] = useState<SavedPaper | null>(null);
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [editNotes, setEditNotes] = useState('');
+  const [newTag, setNewTag] = useState('');
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   useEffect(() => {
     loadCollections();
@@ -32,6 +37,7 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
   const loadCollections = () => {
     const allCollections = getAllCollectionsWithPapers();
     setCollections(allCollections);
+    setAvailableTags(getAllTags());
   };
 
   const handleCreateCollection = (name: string, description?: string, color?: string) => {
@@ -62,6 +68,34 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
     setEditingCollection(null);
     setEditName('');
     setEditDescription('');
+  };
+
+  const handleEditPaper = (paper: SavedPaper, collectionId: string) => {
+    setEditingPaper(paper);
+    setEditTags(paper.tags || []);
+    setEditNotes(paper.notes || '');
+    setNewTag('');
+    // Store the collection ID in the paper for reference
+    setEditingPaper({ ...paper, collectionId } as any);
+  };
+
+  const handleSavePaperEdit = () => {
+    if (editingPaper && (editingPaper as any).collectionId) {
+      updatePaperTagsAndNotes(editingPaper, (editingPaper as any).collectionId, editTags, editNotes);
+      setEditingPaper(null);
+      loadCollections();
+    }
+  };
+
+  const handleAddTag = (tag: string) => {
+    if (tag && !editTags.includes(tag)) {
+      setEditTags([...editTags, tag]);
+    }
+    setNewTag('');
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setEditTags(editTags.filter(tag => tag !== tagToRemove));
   };
 
   const handleDeleteCollection = (collectionId: string) => {
@@ -384,10 +418,52 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                     {selectedCollectionData.papers.map((paper: any, index: number) => (
                       <div key={`${paper.doi || paper.title}-${index}`} className="relative">
                         <ResultCard paper={paper} />
-                        <div className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-full px-2 py-1">
-                          <span className="text-xs text-gray-500">
+                        
+                        {/* Tags and Notes Overlay */}
+                        <div className="absolute top-4 right-4 bg-white bg-opacity-95 rounded-lg p-3 shadow-sm border border-gray-200 max-w-xs">
+                          <div className="text-xs text-gray-500 mb-2">
                             Added {new Date(paper.savedAt).toLocaleDateString()}
-                          </span>
+                          </div>
+                          
+                          {/* Tags */}
+                          {paper.tags && paper.tags.length > 0 && (
+                            <div className="mb-2">
+                              <div className="flex flex-wrap gap-1">
+                                {paper.tags.map((tag: string, tagIndex: number) => (
+                                  <span
+                                    key={tagIndex}
+                                    className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Notes */}
+                          {paper.notes && paper.notes.trim() && (
+                            <div className="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200">
+                              <div className="font-medium text-yellow-800 mb-1 flex items-center">
+                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                </svg>
+                                Note:
+                              </div>
+                              <div className="text-gray-600 line-clamp-3">{paper.notes}</div>
+                            </div>
+                          )}
+                          
+                          {/* Edit button */}
+                          <button
+                            onClick={() => handleEditPaper(paper, selectedCollectionData.id)}
+                            className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center"
+                          >
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit tags & notes
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -425,6 +501,138 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
         onClose={() => setShowCreateModal(false)}
         onCreateCollection={handleCreateCollection}
       />
+
+      {/* Edit Tags and Notes Modal */}
+      {editingPaper && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Edit Tags & Notes
+              </h3>
+              <button
+                onClick={() => setEditingPaper(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Paper Title */}
+              <div className="bg-gray-50 p-3 rounded-md">
+                <h4 className="font-medium text-gray-900 text-sm mb-1">Paper:</h4>
+                <p className="text-sm text-gray-600 line-clamp-2">{editingPaper.title}</p>
+              </div>
+
+              {/* Tags Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tags
+                </label>
+                
+                {/* Tag Input */}
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    placeholder="Add a tag..."
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddTag(newTag);
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button
+                    onClick={() => handleAddTag(newTag)}
+                    disabled={!newTag || editTags.includes(newTag)}
+                    className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {/* Suggested Tags */}
+                {availableTags.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-2">Suggested tags:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {availableTags.slice(0, 10).map((tag) => (
+                        <button
+                          key={tag}
+                          onClick={() => handleAddTag(tag)}
+                          disabled={editTags.includes(tag)}
+                          className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected Tags */}
+                {editTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {editTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center px-2 py-1 text-sm bg-blue-100 text-blue-800 rounded-full"
+                      >
+                        {tag}
+                        <button
+                          onClick={() => handleRemoveTag(tag)}
+                          className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Notes Section */}
+              <div>
+                <label htmlFor="editNotes" className="block text-sm font-medium text-gray-700 mb-2">
+                  Notes
+                </label>
+                <textarea
+                  id="editNotes"
+                  placeholder="Add notes about this paper... (e.g., 'Use for lit review intro', 'Refutes 2020 Smith study')"
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t bg-gray-50 flex justify-end space-x-3">
+              <button
+                onClick={() => setEditingPaper(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSavePaperEdit}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
