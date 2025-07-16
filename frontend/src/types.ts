@@ -7,6 +7,7 @@ export interface Paper {
   full_text_url?: string;
   doi?: string;
   journal?: string;
+  citation_count?: number;
 }
 
 export interface SearchRequest {
@@ -17,7 +18,7 @@ export interface SearchRequest {
   education_level?: string;
   publication_type?: string;
   study_type?: string;
-  sort_by?: 'relevance' | 'newest' | 'oldest';
+  sort_by?: 'relevance' | 'newest' | 'oldest' | 'citations';
   page?: number;
   per_page?: number;
 }

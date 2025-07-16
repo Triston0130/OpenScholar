@@ -18,7 +18,7 @@ const SearchPage: React.FC = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-  const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'oldest'>('relevance');
+  const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'oldest' | 'citations'>('relevance');
   const [currentSearchRequest, setCurrentSearchRequest] = useState<SearchRequest | null>(null);
   const [showCollections, setShowCollections] = useState(false);
   const [totalSavedCount, setTotalSavedCount] = useState(0);
@@ -95,7 +95,7 @@ const SearchPage: React.FC = () => {
     }
   };
 
-  const handleSortChange = async (newSortBy: 'relevance' | 'newest' | 'oldest') => {
+  const handleSortChange = async (newSortBy: 'relevance' | 'newest' | 'oldest' | 'citations') => {
     setSortBy(newSortBy);
     setCurrentPage(1);
     if (currentSearchRequest) {
@@ -201,12 +201,13 @@ const SearchPage: React.FC = () => {
                       <select
                         id="sort"
                         value={sortBy}
-                        onChange={(e) => handleSortChange(e.target.value as 'relevance' | 'newest' | 'oldest')}
+                        onChange={(e) => handleSortChange(e.target.value as 'relevance' | 'newest' | 'oldest' | 'citations')}
                         className="rounded-md border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500"
                       >
                         <option value="relevance">Relevance</option>
                         <option value="newest">Newest</option>
                         <option value="oldest">Oldest</option>
+                        <option value="citations">Most Cited</option>
                       </select>
                     </div>
                   </div>

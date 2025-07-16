@@ -130,7 +130,7 @@ def sort_papers(papers: List[Paper], query: str, sort_by: str = 'relevance') -> 
     Args:
         papers: List of papers to sort
         query: Search query for relevance scoring
-        sort_by: One of 'relevance', 'newest', 'oldest'
+        sort_by: One of 'relevance', 'newest', 'oldest', 'citations'
     
     Returns:
         Sorted list of papers
@@ -158,6 +158,12 @@ def sort_papers(papers: List[Paper], query: str, sort_by: str = 'relevance') -> 
             except:
                 return 9999
         return sorted(papers, key=get_year)
+    
+    elif sort_by == 'citations':
+        # Sort by citation count, highest first
+        def get_citations(paper):
+            return paper.citation_count if paper.citation_count is not None else 0
+        return sorted(papers, key=get_citations, reverse=True)
     
     else:
         # Default: return as-is

@@ -10,7 +10,7 @@ class SearchRequest(BaseModel):
     education_level: Optional[str] = None
     publication_type: Optional[str] = None  # journal, conference, book, etc.
     study_type: Optional[str] = None       # experimental, survey, review, meta-analysis
-    sort_by: Optional[str] = Field(default="relevance", pattern="^(relevance|newest|oldest)$")
+    sort_by: Optional[str] = Field(default="relevance", pattern="^(relevance|newest|oldest|citations)$")
     page: Optional[int] = Field(default=1, ge=1)
     per_page: Optional[int] = Field(default=20, ge=10, le=50)
     
@@ -34,6 +34,7 @@ class Paper(BaseModel):
     full_text_url: Optional[str] = None
     doi: Optional[str] = None
     journal: Optional[str] = None
+    citation_count: Optional[int] = None
     
 class SearchResponse(BaseModel):
     total_results: int

@@ -20,7 +20,7 @@ class SemanticScholarClient(BaseAPIClient):
         params = {
             "query": search_query,
             "limit": 100,
-            "fields": "title,authors,abstract,year,venue,publicationTypes,doi,url"
+            "fields": "title,authors,abstract,year,venue,publicationTypes,doi,url,citationCount"
         }
         
         # Add year filter
@@ -59,7 +59,8 @@ class SemanticScholarClient(BaseAPIClient):
                     source="Semantic Scholar",
                     full_text_url=full_text_url,
                     doi=item.get("doi"),
-                    journal=item.get("venue", "")
+                    journal=item.get("venue", ""),
+                    citation_count=item.get("citationCount")
                 )
                 
                 papers.append(paper)
@@ -112,7 +113,8 @@ class SemanticScholarClient(BaseAPIClient):
                 source="Semantic Scholar",
                 full_text_url=raw_paper.get("url", ""),
                 doi=raw_paper.get("doi"),
-                journal=raw_paper.get("venue", "")
+                journal=raw_paper.get("venue", ""),
+                citation_count=raw_paper.get("citationCount")
             )
             
             return paper
