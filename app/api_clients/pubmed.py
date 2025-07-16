@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import httpx
 from app.models import Paper, SearchRequest
 from .base import BaseAPIClient
@@ -165,3 +165,9 @@ class PubMedClient(BaseAPIClient):
             self.logger.error(f"Error parsing PubMed XML: {str(e)}")
         
         return papers
+    
+    def normalize_paper(self, raw_paper: Dict[str, Any]) -> Optional[Paper]:
+        """Normalize PubMed XML response to Paper model - not used since we parse XML directly"""
+        # This method is required by BaseAPIClient but not used in PubMed
+        # since we parse the XML response directly in _parse_response
+        return None

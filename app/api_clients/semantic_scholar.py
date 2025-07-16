@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import httpx
 from app.models import Paper, SearchRequest
 from .base import BaseAPIClient
@@ -87,3 +87,29 @@ class SemanticScholarClient(BaseAPIClient):
                 terms.append("higher education university college")
         
         return " ".join(terms)
+    
+    def normalize_paper(self, raw_paper: Dict[str, Any]) -> Optional[Paper]:
+        """Normalize Semantic Scholar JSON response to Paper model"""
+        try:
+            # Extract authors
+            authors = []
+            for author in raw_paper.get("authors", []):
+                if author.get("name"):
+                    authors.append(author["name"])
+            
+            paper = Paper(
+                title=raw_paper.get("title", ""),
+                authors=authors if authors else ["Unknown"],
+                abstract=raw_paper.get("abstract", "No abstract available"),
+                year=str(raw_paper.get("year", "2000")),
+                source="Semantic Scholar",
+                full_text_url=raw_paper.get("url", ""),
+                doi=raw_paper.get("doi"),
+                journal=raw_paper.get("venue", "")
+            )
+            
+            return paper
+            
+        except Exception as e:
+            self.logger.error(f"Error normalizing Semantic Scholar paper: {str(e)}")
+            return None
