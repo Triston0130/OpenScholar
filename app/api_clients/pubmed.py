@@ -29,7 +29,7 @@ class PubMedClient(BaseAPIClient):
         params = {
             "db": "pubmed",
             "term": f"{search_query} {date_filter}".strip(),
-            "retmax": 30,
+            "retmax": 100,
             "retmode": "json"
         }
         

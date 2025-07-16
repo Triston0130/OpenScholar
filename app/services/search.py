@@ -36,7 +36,8 @@ class SearchService:
             year_start=request.year_start,
             year_end=request.year_end,
             discipline=request.discipline,
-            education_level=request.education_level
+            education_level=request.education_level,
+            limit=100
         ))
         sources_queried.append("ERIC")
         
@@ -46,7 +47,8 @@ class SearchService:
             year_start=request.year_start,
             year_end=request.year_end,
             discipline=request.discipline,
-            education_level=request.education_level
+            education_level=request.education_level,
+            limit=100
         ))
         sources_queried.append("CORE")
         
@@ -56,7 +58,8 @@ class SearchService:
             year_start=request.year_start,
             year_end=request.year_end,
             discipline=request.discipline,
-            education_level=request.education_level
+            education_level=request.education_level,
+            limit=100
         ))
         sources_queried.append("DOAJ")
         
@@ -66,7 +69,8 @@ class SearchService:
             year_start=request.year_start,
             year_end=request.year_end,
             discipline=request.discipline,
-            education_level=request.education_level
+            education_level=request.education_level,
+            limit=100
         ))
         sources_queried.append("Europe PMC")
         
@@ -76,7 +80,8 @@ class SearchService:
             year_start=request.year_start,
             year_end=request.year_end,
             discipline=request.discipline,
-            education_level=request.education_level
+            education_level=request.education_level,
+            limit=100
         ))
         sources_queried.append("PubMed Central")
         

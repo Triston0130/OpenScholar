@@ -19,7 +19,7 @@ class SemanticScholarClient(BaseAPIClient):
         
         params = {
             "query": search_query,
-            "limit": 30,
+            "limit": 100,
             "fields": "title,authors,abstract,year,venue,publicationTypes,doi,url"
         }
         
