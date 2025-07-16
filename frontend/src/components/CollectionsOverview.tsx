@@ -350,7 +350,7 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                 {/* Papers */}
                 {selectedCollectionData.papers.length > 0 ? (
                   <div className="space-y-6">
-                    {selectedCollectionData.papers.map((paper, index) => (
+                    {selectedCollectionData.papers.map((paper: any, index: number) => (
                       <div key={`${paper.doi || paper.title}-${index}`} className="relative">
                         <ResultCard paper={paper} />
                         <div className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-full px-2 py-1">
