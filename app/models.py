@@ -10,6 +10,7 @@ class SearchRequest(BaseModel):
     education_level: Optional[str] = None
     publication_type: Optional[str] = None  # journal, conference, book, etc.
     study_type: Optional[str] = None       # experimental, survey, review, meta-analysis
+    min_citations: Optional[int] = Field(default=None, ge=0)  # minimum citation count filter
     sort_by: Optional[str] = Field(default="relevance", pattern="^(relevance|newest|oldest|citations)$")
     page: Optional[int] = Field(default=1, ge=1)
     per_page: Optional[int] = Field(default=20, ge=10, le=50)

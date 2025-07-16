@@ -130,6 +130,13 @@ class SearchService:
         # Deduplicate papers
         deduplicated_papers = self._deduplicate_papers(all_papers)
         
+        # Apply citation count filter if specified
+        if request.min_citations is not None:
+            deduplicated_papers = [
+                paper for paper in deduplicated_papers 
+                if paper.citation_count is not None and paper.citation_count >= request.min_citations
+            ]
+        
         # Apply sorting based on request
         sorted_papers = sort_papers(deduplicated_papers, request.query, request.sort_by)
         

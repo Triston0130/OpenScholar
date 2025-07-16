@@ -18,6 +18,7 @@ export interface SearchRequest {
   education_level?: string;
   publication_type?: string;
   study_type?: string;
+  min_citations?: number;
   sort_by?: 'relevance' | 'newest' | 'oldest' | 'citations';
   page?: number;
   per_page?: number;

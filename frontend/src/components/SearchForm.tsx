@@ -14,6 +14,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
   const [educationLevel, setEducationLevel] = useState('');
   const [publicationType, setPublicationType] = useState('');
   const [studyType, setStudyType] = useState('');
+  const [minCitations, setMinCitations] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +28,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
       education_level: educationLevel || undefined,
       publication_type: publicationType || undefined,
       study_type: studyType || undefined,
+      min_citations: minCitations ? parseInt(minCitations) : undefined,
     };
 
     onSearch(searchRequest);
@@ -162,6 +164,28 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
               <option value="review">Literature Review</option>
               <option value="meta-analysis">Meta-Analysis</option>
               <option value="case study">Case Study</option>
+            </select>
+          </div>
+
+          {/* Minimum Citations Filter */}
+          <div>
+            <label htmlFor="minCitations" className="block text-sm font-medium text-gray-700 mb-2">
+              Minimum Citations
+            </label>
+            <select
+              id="minCitations"
+              value={minCitations}
+              onChange={(e) => setMinCitations(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="">Any Citation Count</option>
+              <option value="1">1+ citations</option>
+              <option value="5">5+ citations</option>
+              <option value="10">10+ citations (Well-cited)</option>
+              <option value="25">25+ citations (Popular)</option>
+              <option value="50">50+ citations (Influential)</option>
+              <option value="100">100+ citations (Highly influential)</option>
+              <option value="250">250+ citations (Landmark)</option>
             </select>
           </div>
         </div>
