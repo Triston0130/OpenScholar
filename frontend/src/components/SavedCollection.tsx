@@ -14,6 +14,7 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
   const [editNotes, setEditNotes] = useState('');
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadSavedPapers();
@@ -265,7 +266,33 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
                       <span className="text-sm font-medium text-gray-700">Notes:</span>
                     </div>
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                      <p className="text-gray-700 leading-relaxed">{paper.notes}</p>
+                      {(() => {
+                        const noteId = paper.doi || paper.title;
+                        const isExpanded = expandedNotes.has(noteId);
+                        const displayText = isExpanded ? paper.notes : paper.notes.substring(0, 300);
+                        
+                        return (
+                          <div>
+                            <p className="text-gray-700 leading-relaxed">{displayText}</p>
+                            {paper.notes.length > 300 && (
+                              <button
+                                onClick={() => {
+                                  const newExpandedNotes = new Set(expandedNotes);
+                                  if (isExpanded) {
+                                    newExpandedNotes.delete(noteId);
+                                  } else {
+                                    newExpandedNotes.add(noteId);
+                                  }
+                                  setExpandedNotes(newExpandedNotes);
+                                }}
+                                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 focus:outline-none"
+                              >
+                                {isExpanded ? 'Show less' : 'Show more'}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
