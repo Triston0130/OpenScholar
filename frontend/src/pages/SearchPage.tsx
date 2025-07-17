@@ -12,6 +12,14 @@ import { getAllCollectionsWithPapers, addPaperToCollection } from '../utils/coll
 import { getProxySettings } from '../utils/proxy';
 import CollectionSelector from '../components/CollectionSelector';
 
+interface PaginationCache {
+  [key: string]: {
+    papers: Paper[];
+    sourcesQueried: string[];
+    totalResults: number;
+  };
+}
+
 const SearchPage: React.FC = () => {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +39,8 @@ const SearchPage: React.FC = () => {
   const [showBulkMode, setShowBulkMode] = useState(false);
   const [showBulkCollectionSelector, setShowBulkCollectionSelector] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [paginationCache, setPaginationCache] = useState<PaginationCache>({});
+  const [currentSearchId, setCurrentSearchId] = useState<string>('');
 
   useEffect(() => {
     updateSavedCount();
@@ -112,7 +122,40 @@ const SearchPage: React.FC = () => {
     }
   };
 
+  // Generate cache key for pagination consistency
+  const generateCacheKey = (searchRequest: SearchRequest, searchId: string) => {
+    return `${searchId}-page-${searchRequest.page}-perpage-${searchRequest.per_page}-sort-${searchRequest.sort_by}`;
+  };
+
+  // Generate unique search ID to ensure cache isolation between searches
+  const generateSearchId = (searchRequest: SearchRequest) => {
+    const searchParams = {
+      query: searchRequest.query,
+      year_start: searchRequest.year_start,
+      year_end: searchRequest.year_end,
+      discipline: searchRequest.discipline,
+      education_level: searchRequest.education_level,
+      publication_type: searchRequest.publication_type,
+      study_type: searchRequest.study_type,
+      min_citations: searchRequest.min_citations,
+      sources: searchRequest.sources?.sort().join(',') || ''
+    };
+    return btoa(JSON.stringify(searchParams)).replace(/[/+=]/g, '');
+  };
+
   const performSearchRequest = async (searchRequest: SearchRequest, isNewSearch = false) => {
+    const searchId = currentSearchId || generateSearchId(searchRequest);
+    const cacheKey = generateCacheKey(searchRequest, searchId);
+    
+    // Check cache first for pagination requests
+    if (!isNewSearch && paginationCache[cacheKey]) {
+      const cached = paginationCache[cacheKey];
+      setPapers(cached.papers);
+      setSourcesQueried(cached.sourcesQueried);
+      setTotalResults(cached.totalResults);
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -120,6 +163,16 @@ const SearchPage: React.FC = () => {
       setPapers(response.papers);
       setSourcesQueried(response.sources_queried);
       setTotalResults(response.total_results);
+      
+      // Cache the result
+      setPaginationCache(prev => ({
+        ...prev,
+        [cacheKey]: {
+          papers: response.papers,
+          sourcesQueried: response.sources_queried,
+          totalResults: response.total_results
+        }
+      }));
       
       if (isNewSearch) {
         setSearchPerformed(true);
@@ -144,6 +197,11 @@ const SearchPage: React.FC = () => {
   const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
     setSearchPerformed(false);
     setCurrentSearchRequest(searchRequest);
+    
+    // Generate new search ID and clear cache for new searches
+    const newSearchId = generateSearchId(searchRequest);
+    setCurrentSearchId(newSearchId);
+    setPaginationCache({});
     
     // Clear selections on new search
     setSelectedPapers([]);
@@ -175,6 +233,7 @@ const SearchPage: React.FC = () => {
   const handlePerPageChange = async (newPerPage: number) => {
     setPerPage(newPerPage);
     setCurrentPage(1);
+    setPaginationCache({}); // Clear cache when pagination size changes
     if (currentSearchRequest) {
       const request = { ...currentSearchRequest, page: 1, per_page: newPerPage, sort_by: sortBy };
       await performSearchRequest(request, false);
@@ -184,6 +243,7 @@ const SearchPage: React.FC = () => {
   const handleSortChange = async (newSortBy: 'relevance' | 'newest' | 'oldest' | 'citations') => {
     setSortBy(newSortBy);
     setCurrentPage(1);
+    setPaginationCache({}); // Clear cache when sort order changes
     if (currentSearchRequest) {
       const request = { ...currentSearchRequest, page: 1, per_page: perPage, sort_by: newSortBy };
       await performSearchRequest(request, false);
