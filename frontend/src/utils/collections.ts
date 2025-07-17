@@ -12,14 +12,26 @@ export interface Collection {
   color?: string;
 }
 
+export interface Folder {
+  id: string;
+  name: string;
+  collectionId: string;
+  parentId?: string;
+  createdAt: string;
+  updatedAt: string;
+  color?: string;
+}
+
 export interface SavedPaper extends Paper {
   savedAt: string;
   tags?: string[];
   notes?: string;
+  folderId?: string;
 }
 
 export interface CollectionWithPapers extends Collection {
   papers: SavedPaper[];
+  folders: Folder[];
 }
 
 // Collection Management
@@ -39,8 +51,8 @@ export const getCollections = (): Collection[] => {
         color: '#3B82F6'
       };
       collections.push(defaultCollection);
-      // Preserve existing papers data
-      saveCollectionsData({ collections, papers: data.papers });
+      // Preserve existing papers and folders data
+      saveCollectionsData({ collections, papers: data.papers, folders: data.folders });
     }
     
     return collections;
@@ -86,6 +98,7 @@ export const deleteCollection = (id: string): void => {
   const data = getCollectionsData();
   data.collections = data.collections.filter((c: Collection) => c.id !== id);
   delete data.papers[id];
+  delete data.folders[id];
   saveCollectionsData(data);
   dispatchCollectionsChange();
 };
@@ -95,7 +108,8 @@ export const addPaperToCollection = (
   paper: Paper, 
   collectionId: string, 
   tags: string[] = [], 
-  notes: string = ''
+  notes: string = '',
+  folderId?: string
 ): void => {
   const data = getCollectionsData();
   
@@ -107,7 +121,8 @@ export const addPaperToCollection = (
     ...paper,
     savedAt: new Date().toISOString(),
     tags: tags,
-    notes: notes
+    notes: notes,
+    folderId: folderId
   };
   
   // Check if already in collection
@@ -220,7 +235,8 @@ export const getAllCollectionsWithPapers = (): CollectionWithPapers[] => {
   const collections = getCollections();
   return collections.map((collection: Collection) => ({
     ...collection,
-    papers: getCollectionPapers(collection.id)
+    papers: getCollectionPapers(collection.id),
+    folders: getFolders(collection.id)
   }));
 };
 
@@ -274,15 +290,16 @@ export const exportCollection = (collectionId: string, format: 'bibtex' | 'pdf-l
 interface CollectionsData {
   collections: Collection[];
   papers: Record<string, SavedPaper[]>;
+  folders: Record<string, Folder[]>;
 }
 
 const getCollectionsData = (): CollectionsData => {
   try {
     const data = localStorage.getItem(COLLECTIONS_KEY);
-    return data ? JSON.parse(data) : { collections: [], papers: {} };
+    return data ? JSON.parse(data) : { collections: [], papers: {}, folders: {} };
   } catch (error) {
     console.error('Error parsing collections data:', error);
-    return { collections: [], papers: {} };
+    return { collections: [], papers: {}, folders: {} };
   }
 };
 
@@ -390,4 +407,105 @@ ${papers.slice(0, 5).map((paper: SavedPaper, index: number) =>
 `).join('\n')}
 
 *Generated from OpenScholar on ${new Date().toLocaleDateString()}*`;
+};
+
+// Folder Management
+export const getFolders = (collectionId: string): Folder[] => {
+  const data = getCollectionsData();
+  return data.folders[collectionId] || [];
+};
+
+export const createFolder = (collectionId: string, name: string, parentId?: string, color?: string): Folder => {
+  const folder: Folder = {
+    id: generateId(),
+    name,
+    collectionId,
+    parentId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    color: color || getRandomColor()
+  };
+  
+  const data = getCollectionsData();
+  if (!data.folders[collectionId]) {
+    data.folders[collectionId] = [];
+  }
+  data.folders[collectionId].push(folder);
+  saveCollectionsData(data);
+  dispatchCollectionsChange();
+  
+  return folder;
+};
+
+export const updateFolder = (folderId: string, collectionId: string, updates: Partial<Folder>): void => {
+  const data = getCollectionsData();
+  if (data.folders[collectionId]) {
+    const index = data.folders[collectionId].findIndex(f => f.id === folderId);
+    if (index !== -1) {
+      data.folders[collectionId][index] = {
+        ...data.folders[collectionId][index],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      saveCollectionsData(data);
+      dispatchCollectionsChange();
+    }
+  }
+};
+
+export const deleteFolder = (folderId: string, collectionId: string): void => {
+  const data = getCollectionsData();
+  
+  if (data.folders[collectionId]) {
+    // Remove the folder
+    data.folders[collectionId] = data.folders[collectionId].filter(f => f.id !== folderId);
+    
+    // Remove folderId from papers that were in this folder
+    if (data.papers[collectionId]) {
+      data.papers[collectionId] = data.papers[collectionId].map(paper => ({
+        ...paper,
+        folderId: paper.folderId === folderId ? undefined : paper.folderId
+      }));
+    }
+    
+    // Recursively delete child folders
+    const childFolders = data.folders[collectionId].filter(f => f.parentId === folderId);
+    for (const childFolder of childFolders) {
+      deleteFolder(childFolder.id, collectionId);
+    }
+    
+    saveCollectionsData(data);
+    dispatchCollectionsChange();
+  }
+};
+
+export const getFolderPapers = (collectionId: string, folderId?: string): SavedPaper[] => {
+  const papers = getCollectionPapers(collectionId);
+  return papers.filter(paper => paper.folderId === folderId);
+};
+
+export const movePaperToFolder = (paper: Paper, collectionId: string, folderId?: string): void => {
+  const data = getCollectionsData();
+  
+  if (data.papers[collectionId]) {
+    const paperIndex = data.papers[collectionId].findIndex((p: SavedPaper) => 
+      (paper.doi && p.doi === paper.doi) || p.title === paper.title
+    );
+    
+    if (paperIndex !== -1) {
+      data.papers[collectionId][paperIndex] = {
+        ...data.papers[collectionId][paperIndex],
+        folderId: folderId
+      };
+      
+      // Update collection timestamp
+      const collection = data.collections.find((c: Collection) => c.id === collectionId);
+      if (collection) {
+        collection.updatedAt = new Date().toISOString();
+      }
+      
+      saveCollectionsData(data);
+      dispatchCollectionsChange();
+    }
+  }
 };

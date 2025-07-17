@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllCollectionsWithPapers, deleteCollection, updateCollection, exportCollection, getCollectionStats, Collection, updatePaperTagsAndNotes, getAllTags, SavedPaper, addPaperToCollection } from '../utils/collections';
+import { getAllCollectionsWithPapers, deleteCollection, updateCollection, exportCollection, getCollectionStats, Collection, updatePaperTagsAndNotes, getAllTags, SavedPaper, addPaperToCollection, Folder, createFolder, updateFolder, deleteFolder, getFolderPapers, movePaperToFolder } from '../utils/collections';
 import CreateCollectionModal from './CreateCollectionModal';
 import AddExternalPaperModal from './AddExternalPaperModal';
 import ResultCard from './ResultCard';
@@ -24,6 +24,11 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
   const [showAddExternalModal, setShowAddExternalModal] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [showCreateFolderInput, setShowCreateFolderInput] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [editingFolder, setEditingFolder] = useState<string | null>(null);
+  const [editFolderName, setEditFolderName] = useState('');
 
   useEffect(() => {
     loadCollections();
@@ -104,7 +109,47 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
 
   const handleAddExternalPaper = (paper: Paper) => {
     if (selectedCollection) {
-      addPaperToCollection(paper, selectedCollection);
+      addPaperToCollection(paper, selectedCollection, [], '', selectedFolder || undefined);
+      loadCollections();
+    }
+  };
+
+  const handleCreateFolder = () => {
+    if (selectedCollection && newFolderName.trim()) {
+      createFolder(selectedCollection, newFolderName.trim());
+      setNewFolderName('');
+      setShowCreateFolderInput(false);
+      loadCollections();
+    }
+  };
+
+  const handleEditFolder = (folder: Folder) => {
+    setEditingFolder(folder.id);
+    setEditFolderName(folder.name);
+  };
+
+  const handleSaveFolderEdit = () => {
+    if (editingFolder && selectedCollection && editFolderName.trim()) {
+      updateFolder(editingFolder, selectedCollection, { name: editFolderName.trim() });
+      setEditingFolder(null);
+      setEditFolderName('');
+      loadCollections();
+    }
+  };
+
+  const handleDeleteFolder = (folderId: string) => {
+    if (selectedCollection && window.confirm('Are you sure you want to delete this folder? Papers in this folder will be moved to the collection root.')) {
+      deleteFolder(folderId, selectedCollection);
+      if (selectedFolder === folderId) {
+        setSelectedFolder(null);
+      }
+      loadCollections();
+    }
+  };
+
+  const handleMovePaperToFolder = (paper: SavedPaper, folderId?: string) => {
+    if (selectedCollection) {
+      movePaperToFolder(paper, selectedCollection, folderId);
       loadCollections();
     }
   };
@@ -437,28 +482,194 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                   </div>
                 </div>
 
+                {/* Folders and Papers */}
+                <div className="bg-white rounded-lg shadow p-6 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Folders</h3>
+                    <button
+                      onClick={() => setShowCreateFolderInput(true)}
+                      className="flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      New Folder
+                    </button>
+                  </div>
+
+                  {/* Create Folder Input */}
+                  {showCreateFolderInput && (
+                    <div className="flex gap-2 mb-4">
+                      <input
+                        type="text"
+                        placeholder="Folder name..."
+                        value={newFolderName}
+                        onChange={(e) => setNewFolderName(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleCreateFolder();
+                          }
+                        }}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleCreateFolder}
+                        disabled={!newFolderName.trim()}
+                        className="px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Create
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowCreateFolderInput(false);
+                          setNewFolderName('');
+                        }}
+                        className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Folder Navigation */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <button
+                      onClick={() => setSelectedFolder(null)}
+                      className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                        selectedFolder === null
+                          ? 'text-blue-700 bg-blue-100'
+                          : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                      }`}
+                    >
+                      📄 All Papers
+                    </button>
+                    
+                    {selectedCollectionData.folders.map((folder: Folder) => (
+                      <div key={folder.id} className="relative">
+                        {editingFolder === folder.id ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={editFolderName}
+                              onChange={(e) => setEditFolderName(e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleSaveFolderEdit();
+                                }
+                              }}
+                              className="px-2 py-1 text-sm border border-gray-300 rounded"
+                              autoFocus
+                            />
+                            <button
+                              onClick={handleSaveFolderEdit}
+                              className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingFolder(null);
+                                setEditFolderName('');
+                              }}
+                              className="px-2 py-1 text-xs bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => setSelectedFolder(folder.id)}
+                              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                selectedFolder === folder.id
+                                  ? 'text-blue-700 bg-blue-100'
+                                  : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                              }`}
+                            >
+                              📁 {folder.name}
+                            </button>
+                            <div className="ml-1 relative">
+                              <button
+                                onClick={() => {/* Toggle folder menu */}}
+                                className="p-1 text-gray-400 hover:text-gray-600 rounded"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                </svg>
+                              </button>
+                              <div className="absolute right-0 top-6 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-10 hidden">
+                                <div className="py-1">
+                                  <button
+                                    onClick={() => handleEditFolder(folder)}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteFolder(folder.id)}
+                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Papers */}
-                {selectedCollectionData.papers.length > 0 ? (
-                  <div className="space-y-6">
-                    {selectedCollectionData.papers.map((paper: any, index: number) => (
+                {(() => {
+                  const papersToShow = selectedFolder 
+                    ? getFolderPapers(selectedCollectionData.id, selectedFolder)
+                    : getFolderPapers(selectedCollectionData.id, undefined);
+                  
+                  return papersToShow.length > 0 ? (
+                    <div className="space-y-6">
+                      {papersToShow.map((paper: any, index: number) => (
                       <div key={`${paper.doi || paper.title}-${index}`}>
                         <ResultCard paper={paper} />
                         
                         {/* Tags and Notes Section */}
                         <div className="bg-white rounded-lg shadow-md p-6 -mt-6 pt-4 border-t border-gray-200">
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs text-gray-500">
-                              Added {new Date(paper.savedAt).toLocaleDateString()}
-                            </span>
-                            <button
-                              onClick={() => handleEditPaper(paper, selectedCollectionData.id)}
-                              className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                            >
-                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              Edit tags & notes
-                            </button>
+                            <div className="flex items-center gap-4">
+                              <span className="text-xs text-gray-500">
+                                Added {new Date(paper.savedAt).toLocaleDateString()}
+                              </span>
+                              {paper.folderId && (
+                                <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                  📁 {selectedCollectionData.folders.find((f: Folder) => f.id === paper.folderId)?.name || 'Unknown Folder'}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={paper.folderId || ''}
+                                onChange={(e) => handleMovePaperToFolder(paper, e.target.value || undefined)}
+                                className="text-xs border border-gray-300 rounded px-2 py-1 text-gray-600"
+                              >
+                                <option value="">No Folder</option>
+                                {selectedCollectionData.folders.map((folder: Folder) => (
+                                  <option key={folder.id} value={folder.id}>
+                                    📁 {folder.name}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                onClick={() => handleEditPaper(paper, selectedCollectionData.id)}
+                                className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              >
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Edit tags & notes
+                              </button>
+                            </div>
                           </div>
                           
                           {/* Tags */}
@@ -534,17 +745,23 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="text-center py-12 bg-white rounded-lg shadow">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">Collection is empty</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Start adding papers by clicking the "Save" button on search results
-                    </p>
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-center py-12 bg-white rounded-lg shadow">
+                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">
+                        {selectedFolder ? 'Folder is empty' : 'Collection is empty'}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {selectedFolder 
+                          ? 'This folder has no papers yet. Move papers here using the dropdown above each paper.'
+                          : 'Start adding papers by clicking the "Save" button on search results'
+                        }
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
             ) : (
               <div className="text-center py-20 bg-white rounded-lg shadow">

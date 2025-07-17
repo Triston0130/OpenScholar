@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Collection, getCollections, createCollection, isPaperInCollection, getAllTags } from '../utils/collections';
 import { Paper } from '../types';
 import CreateCollectionModal from './CreateCollectionModal';
+import FolderSelector from './FolderSelector';
 
 interface CollectionSelectorProps {
   isOpen: boolean;
   onClose: () => void;
   paper: Paper;
-  onSaveToCollection: (collectionId: string, tags?: string[], notes?: string) => void;
+  onSaveToCollection: (collectionId: string, tags?: string[], notes?: string, folderId?: string) => void;
   onRemoveFromCollection: (collectionId: string) => void;
 }
 
@@ -27,6 +28,8 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
   const [notes, setNotes] = useState('');
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [showFolderSelector, setShowFolderSelector] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (isOpen) {
@@ -52,7 +55,7 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
     const newCollection = createCollection(name, description, color);
     loadCollections();
     // Automatically add paper to new collection with empty tags and notes
-    onSaveToCollection(newCollection.id, [], '');
+    onSaveToCollection(newCollection.id, [], '', undefined);
   };
 
   const handleToggleCollection = (collectionId: string) => {
@@ -63,17 +66,19 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
       setSelectedCollectionId(collectionId);
       setTags([]);
       setNotes('');
+      setSelectedFolderId(undefined);
       setShowTagsNotesDialog(true);
     }
     loadCollections(); // Refresh to show updated state
   };
 
   const handleSaveWithTagsAndNotes = () => {
-    onSaveToCollection(selectedCollectionId, tags, notes);
+    onSaveToCollection(selectedCollectionId, tags, notes, selectedFolderId);
     setShowTagsNotesDialog(false);
     setSelectedCollectionId('');
     setTags([]);
     setNotes('');
+    setSelectedFolderId(undefined);
   };
 
   const handleAddTag = (tag: string) => {
@@ -316,6 +321,23 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
                 )}
               </div>
 
+              {/* Folder Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Folder (Optional)
+                </label>
+                <button
+                  onClick={() => setShowFolderSelector(true)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-left hover:bg-gray-50 transition-colors"
+                >
+                  {selectedFolderId ? (
+                    <span className="text-gray-900">📁 Selected folder</span>
+                  ) : (
+                    <span className="text-gray-500">Select folder (optional)</span>
+                  )}
+                </button>
+              </div>
+
               {/* Notes Section */}
               <div>
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
@@ -350,6 +372,15 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
           </div>
         </div>
       )}
+
+      {/* Folder Selector Modal */}
+      <FolderSelector
+        isOpen={showFolderSelector}
+        onClose={() => setShowFolderSelector(false)}
+        collectionId={selectedCollectionId}
+        selectedFolderId={selectedFolderId}
+        onSelectFolder={(folderId) => setSelectedFolderId(folderId)}
+      />
     </>
   );
 };
