@@ -138,7 +138,8 @@ const SearchPage: React.FC = () => {
       publication_type: searchRequest.publication_type,
       study_type: searchRequest.study_type,
       min_citations: searchRequest.min_citations,
-      sources: searchRequest.sources?.sort().join(',') || ''
+      sources: searchRequest.sources?.sort().join(',') || '',
+      require_authors: searchRequest.require_authors
     };
     return btoa(JSON.stringify(searchParams)).replace(/[/+=]/g, '');
   };

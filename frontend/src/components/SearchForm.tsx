@@ -26,6 +26,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
   const [studyType, setStudyType] = useState('');
   const [minCitations, setMinCitations] = useState<string>('');
   const [selectedSources, setSelectedSources] = useState<string[]>(availableSources.map(s => s.id));
+  const [requireAuthors, setRequireAuthors] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +46,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
       study_type: studyType || undefined,
       min_citations: minCitations ? parseInt(minCitations) : undefined,
       sources: selectedSources,
+      require_authors: requireAuthors,
     };
 
     onSearch(searchRequest);
@@ -277,6 +279,31 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
               <option value="100">100+ citations (Highly influential)</option>
               <option value="250">250+ citations (Landmark)</option>
             </select>
+          </div>
+
+          {/* Quality Filters */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Quality Filters
+            </label>
+            <div className="space-y-2">
+              <label className="flex items-start">
+                <input
+                  type="checkbox"
+                  checked={requireAuthors}
+                  onChange={(e) => setRequireAuthors(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <div className="ml-2">
+                  <div className="text-sm text-gray-900">
+                    Require named authors
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Excludes conference abstracts and incomplete entries
+                  </div>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
 

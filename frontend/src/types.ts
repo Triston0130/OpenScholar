@@ -24,6 +24,7 @@ export interface SearchRequest {
   page?: number;
   per_page?: number;
   sources?: string[];
+  require_authors?: boolean;
 }
 
 export interface SearchResponse {
