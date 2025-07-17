@@ -26,6 +26,8 @@ const SearchPage: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [totalSavedCount, setTotalSavedCount] = useState(0);
   const [proxySettings, setProxySettings] = useState(getProxySettings());
+  const [selectedPapers, setSelectedPapers] = useState<Paper[]>([]);
+  const [showBulkMode, setShowBulkMode] = useState(false);
 
   useEffect(() => {
     updateSavedCount();
@@ -47,10 +49,24 @@ const SearchPage: React.FC = () => {
     setTotalSavedCount(totalCount);
   };
 
+  const handleToggleSelect = (paper: Paper, selected: boolean) => {
+    setSelectedPapers(prev => {
+      if (selected) {
+        return [...prev, paper];
+      } else {
+        return prev.filter(p => p.title !== paper.title);
+      }
+    });
+  };
+
   const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
     setIsLoading(true);
     setSearchPerformed(false);
     setCurrentSearchRequest(searchRequest);
+    
+    // Clear selections on new search
+    setSelectedPapers([]);
+    setShowBulkMode(false);
     
     // Reset to page 1 if new search
     if (resetPage) {
@@ -246,7 +262,18 @@ const SearchPage: React.FC = () => {
                     <h2 className="text-xl font-semibold text-gray-900">
                       Search Results ({totalResults} papers found)
                     </h2>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => setShowBulkMode(!showBulkMode)}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                          showBulkMode
+                            ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {showBulkMode ? 'Exit Bulk' : 'Bulk Select'}
+                      </button>
+                      <div className="flex items-center gap-2">
                       <label htmlFor="sort" className="text-sm font-medium text-gray-700">
                         Sort by:
                       </label>
@@ -261,6 +288,7 @@ const SearchPage: React.FC = () => {
                         <option value="oldest">Oldest</option>
                         <option value="citations">Most Cited</option>
                       </select>
+                      </div>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -276,6 +304,31 @@ const SearchPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Simple Selection Status */}
+                {showBulkMode && selectedPapers.length > 0 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-center justify-between">
+                      <span className="text-blue-800">
+                        {selectedPapers.length} paper{selectedPapers.length !== 1 ? 's' : ''} selected
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedPapers(papers)}
+                          className="text-sm text-blue-700 hover:text-blue-800"
+                        >
+                          Select All
+                        </button>
+                        <button
+                          onClick={() => setSelectedPapers([])}
+                          className="text-sm text-blue-700 hover:text-blue-800"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Results Grid */}
                 <div className="grid gap-6">
                   {papers.map((paper, index) => (
@@ -283,6 +336,9 @@ const SearchPage: React.FC = () => {
                       key={index} 
                       paper={paper} 
                       searchQuery={currentSearchRequest?.query}
+                      showCheckbox={showBulkMode}
+                      isSelected={selectedPapers.some(p => p.title === paper.title)}
+                      onToggleSelect={handleToggleSelect}
                     />
                   ))}
                 </div>

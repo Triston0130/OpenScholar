@@ -8,9 +8,18 @@ import CollectionSelector from './CollectionSelector';
 interface ResultCardProps {
   paper: Paper;
   searchQuery?: string;
+  showCheckbox?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (paper: Paper, selected: boolean) => void;
 }
 
-const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
+const ResultCard: React.FC<ResultCardProps> = ({ 
+  paper, 
+  searchQuery, 
+  showCheckbox = false, 
+  isSelected = false, 
+  onToggleSelect 
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCitationMenu, setShowCitationMenu] = useState(false);
   const [showCollectionSelector, setShowCollectionSelector] = useState(false);
@@ -141,7 +150,18 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       {/* Title with Action Buttons */}
       <div className="flex items-start justify-between mb-2">
-        <h3 className="text-lg font-semibold text-gray-900 leading-tight flex-1 mr-3">
+        <div className="flex items-start flex-1">
+          {showCheckbox && (
+            <div className="mr-3 mt-1">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => onToggleSelect?.(paper, e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+          )}
+          <h3 className="text-lg font-semibold text-gray-900 leading-tight flex-1 mr-3">
           {paper.full_text_url ? (
             <a
               href={paper.full_text_url}
@@ -153,7 +173,8 @@ const ResultCard: React.FC<ResultCardProps> = ({ paper, searchQuery }) => {
           ) : (
             <span dangerouslySetInnerHTML={{ __html: highlightKeywords(paper.title, searchQuery) }} />
           )}
-        </h3>
+          </h3>
+        </div>
         
         <div className="flex items-center gap-2">
           {/* Save to Collection Button */}
