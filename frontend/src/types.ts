@@ -23,6 +23,7 @@ export interface SearchRequest {
   sort_by?: 'relevance' | 'newest' | 'oldest' | 'citations';
   page?: number;
   per_page?: number;
+  sources?: string[];
 }
 
 export interface SearchResponse {

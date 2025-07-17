@@ -6,6 +6,16 @@ interface SearchFormProps {
   isLoading: boolean;
 }
 
+const availableSources = [
+  { id: 'ERIC', name: 'ERIC', description: 'Education Resources Information Center' },
+  { id: 'CORE', name: 'CORE', description: 'Open access research papers' },
+  { id: 'DOAJ', name: 'DOAJ', description: 'Directory of Open Access Journals' },
+  { id: 'Europe PMC', name: 'Europe PMC', description: 'Life sciences literature' },
+  { id: 'PubMed Central', name: 'PubMed Central', description: 'Biomedical and life sciences' },
+  { id: 'PubMed', name: 'PubMed', description: 'Biomedical literature' },
+  { id: 'Semantic Scholar', name: 'Semantic Scholar', description: 'AI-powered research tool' }
+];
+
 const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
   const [query, setQuery] = useState('');
   const [yearStart, setYearStart] = useState<number>(2000);
@@ -15,10 +25,15 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
   const [publicationType, setPublicationType] = useState('');
   const [studyType, setStudyType] = useState('');
   const [minCitations, setMinCitations] = useState<string>('');
+  const [selectedSources, setSelectedSources] = useState<string[]>(availableSources.map(s => s.id));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
+    if (selectedSources.length === 0) {
+      alert('Please select at least one source to search.');
+      return;
+    }
 
     const searchRequest: SearchRequest = {
       query: query.trim(),
@@ -29,9 +44,26 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
       publication_type: publicationType || undefined,
       study_type: studyType || undefined,
       min_citations: minCitations ? parseInt(minCitations) : undefined,
+      sources: selectedSources,
     };
 
     onSearch(searchRequest);
+  };
+
+  const handleSourceToggle = (sourceId: string) => {
+    setSelectedSources(prev => 
+      prev.includes(sourceId) 
+        ? prev.filter(id => id !== sourceId)
+        : [...prev, sourceId]
+    );
+  };
+
+  const handleSelectAllSources = () => {
+    setSelectedSources(availableSources.map(s => s.id));
+  };
+
+  const handleDeselectAllSources = () => {
+    setSelectedSources([]);
   };
 
   const currentYear = new Date().getFullYear();
@@ -53,6 +85,64 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             required
           />
+        </div>
+
+        {/* Sources Selection */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-gray-700">
+              Sources to Search ({selectedSources.length}/{availableSources.length} selected)
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleSelectAllSources}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Select All
+              </button>
+              <span className="text-gray-300">•</span>
+              <button
+                type="button"
+                onClick={handleDeselectAllSources}
+                className="text-xs text-gray-600 hover:text-gray-700 font-medium"
+              >
+                Deselect All
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {availableSources.map((source) => (
+              <label
+                key={source.id}
+                className={`flex items-start p-3 border rounded-lg cursor-pointer transition-colors ${
+                  selectedSources.includes(source.id)
+                    ? 'border-blue-200 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSources.includes(source.id)}
+                  onChange={() => handleSourceToggle(source.id)}
+                  className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <div className="ml-2 min-w-0">
+                  <div className="text-sm font-medium text-gray-900">
+                    {source.name}
+                  </div>
+                  <div className="text-xs text-gray-500 leading-tight">
+                    {source.description}
+                  </div>
+                </div>
+              </label>
+            ))}
+          </div>
+          {selectedSources.length === 0 && (
+            <p className="text-sm text-red-600 mt-2">
+              Please select at least one source to search.
+            </p>
+          )}
         </div>
 
         {/* Filters Row */}
@@ -194,7 +284,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
         <div>
           <button
             type="submit"
-            disabled={isLoading || !query.trim()}
+            disabled={isLoading || !query.trim() || selectedSources.length === 0}
             className="w-full md:w-auto px-8 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (

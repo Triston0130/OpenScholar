@@ -112,8 +112,36 @@ const SearchPage: React.FC = () => {
     }
   };
 
-  const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
+  const performSearchRequest = async (searchRequest: SearchRequest, isNewSearch = false) => {
     setIsLoading(true);
+    
+    try {
+      const response = await searchPapers(searchRequest);
+      setPapers(response.papers);
+      setSourcesQueried(response.sources_queried);
+      setTotalResults(response.total_results);
+      
+      if (isNewSearch) {
+        setSearchPerformed(true);
+        if (response.papers.length === 0) {
+          toast.error('No papers found. Try different keywords or filters.');
+        } else {
+          toast.success(`Found ${response.total_results || response.papers.length} papers`);
+        }
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to search papers');
+      setPapers([]);
+      if (isNewSearch) {
+        setSearchPerformed(true);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
     setSearchPerformed(false);
     setCurrentSearchRequest(searchRequest);
     
@@ -126,40 +154,21 @@ const SearchPage: React.FC = () => {
       setCurrentPage(1);
     }
     
-    try {
-      const requestWithPagination = {
-        ...searchRequest,
-        page: resetPage ? 1 : currentPage,
-        per_page: perPage,
-        sort_by: sortBy
-      };
-      
-      const response = await searchPapers(requestWithPagination);
-      setPapers(response.papers);
-      setSourcesQueried(response.sources_queried);
-      setTotalResults(response.total_results);
-      setSearchPerformed(true);
-      
-      if (response.papers.length === 0) {
-        toast.error('No papers found. Try different keywords or filters.');
-      } else {
-        toast.success(`Found ${response.total_results || response.papers.length} papers`);
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to search papers');
-      setPapers([]);
-      setSearchPerformed(true);
-    } finally {
-      setIsLoading(false);
-    }
+    const requestWithPagination = {
+      ...searchRequest,
+      page: resetPage ? 1 : currentPage,
+      per_page: perPage,
+      sort_by: sortBy
+    };
+    
+    await performSearchRequest(requestWithPagination, true);
   };
   
   const handlePageChange = async (page: number) => {
     setCurrentPage(page);
     if (currentSearchRequest) {
-      const request = { ...currentSearchRequest, page, per_page: perPage };
-      await handleSearch(request, false);
+      const request = { ...currentSearchRequest, page, per_page: perPage, sort_by: sortBy };
+      await performSearchRequest(request, false);
     }
   };
   
@@ -167,8 +176,8 @@ const SearchPage: React.FC = () => {
     setPerPage(newPerPage);
     setCurrentPage(1);
     if (currentSearchRequest) {
-      const request = { ...currentSearchRequest, page: 1, per_page: newPerPage };
-      await handleSearch(request, false);
+      const request = { ...currentSearchRequest, page: 1, per_page: newPerPage, sort_by: sortBy };
+      await performSearchRequest(request, false);
     }
   };
 
@@ -176,8 +185,8 @@ const SearchPage: React.FC = () => {
     setSortBy(newSortBy);
     setCurrentPage(1);
     if (currentSearchRequest) {
-      const request = { ...currentSearchRequest, page: 1, sort_by: newSortBy };
-      await handleSearch(request, false);
+      const request = { ...currentSearchRequest, page: 1, per_page: perPage, sort_by: newSortBy };
+      await performSearchRequest(request, false);
     }
   };
 
