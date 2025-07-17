@@ -8,8 +8,9 @@ import CollectionsOverview from '../components/CollectionsOverview';
 import SettingsModal from '../components/SettingsModal';
 import { Paper, SearchRequest } from '../types';
 import { searchPapers, exportPapers, downloadFile } from '../utils/api';
-import { getAllCollectionsWithPapers } from '../utils/collections';
+import { getAllCollectionsWithPapers, addPaperToCollection } from '../utils/collections';
 import { getProxySettings } from '../utils/proxy';
+import CollectionSelector from '../components/CollectionSelector';
 
 const SearchPage: React.FC = () => {
   const [papers, setPapers] = useState<Paper[]>([]);
@@ -28,6 +29,8 @@ const SearchPage: React.FC = () => {
   const [proxySettings, setProxySettings] = useState(getProxySettings());
   const [selectedPapers, setSelectedPapers] = useState<Paper[]>([]);
   const [showBulkMode, setShowBulkMode] = useState(false);
+  const [showBulkCollectionSelector, setShowBulkCollectionSelector] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
 
   useEffect(() => {
     updateSavedCount();
@@ -43,6 +46,23 @@ const SearchPage: React.FC = () => {
     };
   }, []);
 
+  // Close export dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showExportDropdown) {
+        setShowExportDropdown(false);
+      }
+    };
+
+    if (showExportDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showExportDropdown]);
+
   const updateSavedCount = () => {
     const collections = getAllCollectionsWithPapers();
     const totalCount = collections.reduce((sum, collection) => sum + collection.papers.length, 0);
@@ -57,6 +77,39 @@ const SearchPage: React.FC = () => {
         return prev.filter(p => p.title !== paper.title);
       }
     });
+  };
+
+  const handleBulkAddToCollection = (collectionId: string, tags?: string[], notes?: string, folderId?: string) => {
+    selectedPapers.forEach(paper => {
+      addPaperToCollection(paper, collectionId, tags, notes, folderId);
+    });
+    setSelectedPapers([]);
+    setShowBulkCollectionSelector(false);
+    updateSavedCount();
+    toast.success(`Added ${selectedPapers.length} papers to collection`);
+  };
+
+  const handleBulkExport = async (format: 'csv' | 'json' | 'bib') => {
+    if (selectedPapers.length === 0) {
+      toast.error('No papers selected for export');
+      return;
+    }
+
+    setIsExporting(true);
+    
+    try {
+      const blob = await exportPapers({ papers: selectedPapers, format });
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `openscholar_selected_${timestamp}.${format}`;
+      
+      downloadFile(blob, filename);
+      toast.success(`Successfully exported ${selectedPapers.length} selected papers as ${format.toUpperCase()}`);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to export papers');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleSearch = async (searchRequest: SearchRequest, resetPage = true) => {
@@ -304,26 +357,100 @@ const SearchPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Simple Selection Status */}
+                {/* Professional Bulk Action Bar */}
                 {showBulkMode && selectedPapers.length > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-6">
                     <div className="flex items-center justify-between">
-                      <span className="text-blue-800">
-                        {selectedPapers.length} paper{selectedPapers.length !== 1 ? 's' : ''} selected
-                      </span>
-                      <div className="flex gap-2">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-gray-900 font-medium">
+                            {selectedPapers.length} paper{selectedPapers.length !== 1 ? 's' : ''} selected
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-sm">
+                          <button
+                            onClick={() => setSelectedPapers(papers)}
+                            className="text-blue-600 hover:text-blue-700 font-medium"
+                          >
+                            Select All ({papers.length})
+                          </button>
+                          <span className="text-gray-300">•</span>
+                          <button
+                            onClick={() => setSelectedPapers([])}
+                            className="text-gray-600 hover:text-gray-700 font-medium"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        {/* Add to Collection Button */}
                         <button
-                          onClick={() => setSelectedPapers(papers)}
-                          className="text-sm text-blue-700 hover:text-blue-800"
+                          onClick={() => setShowBulkCollectionSelector(true)}
+                          className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
                         >
-                          Select All
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Add to Collection
                         </button>
-                        <button
-                          onClick={() => setSelectedPapers([])}
-                          className="text-sm text-blue-700 hover:text-blue-800"
-                        >
-                          Clear All
-                        </button>
+                        
+                        {/* Export Dropdown */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowExportDropdown(!showExportDropdown)}
+                            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Export
+                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          
+                          {showExportDropdown && (
+                            <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => {
+                                    handleBulkExport('csv');
+                                    setShowExportDropdown(false);
+                                  }}
+                                  disabled={isExporting}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Export as CSV
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleBulkExport('json');
+                                    setShowExportDropdown(false);
+                                  }}
+                                  disabled={isExporting}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Export as JSON
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleBulkExport('bib');
+                                    setShowExportDropdown(false);
+                                  }}
+                                  disabled={isExporting}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Export as BibTeX
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -401,6 +528,19 @@ const SearchPage: React.FC = () => {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
       />
+
+      {/* Bulk Collection Selector Modal */}
+      {showBulkCollectionSelector && selectedPapers.length > 0 && (
+        <CollectionSelector
+          isOpen={showBulkCollectionSelector}
+          onClose={() => setShowBulkCollectionSelector(false)}
+          paper={selectedPapers[0]} // Use first paper as reference
+          onSaveToCollection={handleBulkAddToCollection}
+          onRemoveFromCollection={() => {}} // Not applicable for bulk
+          bulkMode={true}
+          bulkCount={selectedPapers.length}
+        />
+      )}
     </div>
   );
 };

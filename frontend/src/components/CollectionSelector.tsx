@@ -10,6 +10,8 @@ interface CollectionSelectorProps {
   paper: Paper;
   onSaveToCollection: (collectionId: string, tags?: string[], notes?: string, folderId?: string) => void;
   onRemoveFromCollection: (collectionId: string) => void;
+  bulkMode?: boolean;
+  bulkCount?: number;
 }
 
 const CollectionSelector: React.FC<CollectionSelectorProps> = ({
@@ -17,7 +19,9 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
   onClose,
   paper,
   onSaveToCollection,
-  onRemoveFromCollection
+  onRemoveFromCollection,
+  bulkMode = false,
+  bulkCount = 0
 }) => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -59,15 +63,15 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
   };
 
   const handleToggleCollection = (collectionId: string) => {
-    if (isPaperInCollection(paper, collectionId)) {
-      onRemoveFromCollection(collectionId);
-    } else {
-      // Show tags and notes dialog for new saves
+    if (bulkMode || !isPaperInCollection(paper, collectionId)) {
+      // Show tags and notes dialog for new saves (always for bulk mode)
       setSelectedCollectionId(collectionId);
       setTags([]);
       setNotes('');
       setSelectedFolderId(undefined);
       setShowTagsNotesDialog(true);
+    } else {
+      onRemoveFromCollection(collectionId);
     }
     loadCollections(); // Refresh to show updated state
   };
@@ -107,10 +111,10 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
           <div className="flex items-center justify-between p-6 border-b">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                Save to Collection
+                {bulkMode ? `Add ${bulkCount} Papers to Collection` : 'Save to Collection'}
               </h3>
               <p className="text-sm text-gray-600 mt-1 truncate">
-                {paper.title}
+                {bulkMode ? `${bulkCount} papers selected` : paper.title}
               </p>
             </div>
             <button
@@ -159,7 +163,7 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
             ) : (
               <div className="space-y-2">
                 {filteredCollections.map((collection) => {
-                  const isInCollection = isPaperInCollection(paper, collection.id);
+                  const isInCollection = !bulkMode && isPaperInCollection(paper, collection.id);
                   
                   return (
                     <button
@@ -210,13 +214,16 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
           <div className="p-4 border-t bg-gray-50">
             <div className="flex justify-between items-center text-sm text-gray-600">
               <span>
-                Paper saved in {filteredCollections.filter(c => isPaperInCollection(paper, c.id)).length} collection(s)
+                {bulkMode 
+                  ? `Ready to add ${bulkCount} papers to selected collection`
+                  : `Paper saved in ${filteredCollections.filter(c => isPaperInCollection(paper, c.id)).length} collection(s)`
+                }
               </span>
               <button
                 onClick={onClose}
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                Done
+                {bulkMode ? 'Cancel' : 'Done'}
               </button>
             </div>
           </div>
@@ -366,7 +373,7 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
                 onClick={handleSaveWithTagsAndNotes}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
               >
-                Save to Collection
+                {bulkMode ? `Add ${bulkCount} Papers` : 'Save to Collection'}
               </button>
             </div>
           </div>
