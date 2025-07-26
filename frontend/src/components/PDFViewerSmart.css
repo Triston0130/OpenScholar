@@ -1,0 +1,211 @@
+/* Highlight styles */
+.pdf-highlight {
+  background-color: #ffeb3b;
+  opacity: 0.7;
+  cursor: pointer;
+  position: relative;
+}
+
+.pdf-highlight:hover {
+  opacity: 0.9;
+}
+
+/* PDF highlight overlays */
+.pdf-highlight-overlay {
+  transition: opacity 0.2s ease;
+}
+
+/* Note indicator */
+.pdf-note-indicator {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.pdf-note-indicator:hover {
+  transform: scale(1.1);
+}
+
+/* Note tooltip */
+.pdf-note-tooltip {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  max-width: 300px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+}
+
+/* Flashcard indicator */
+.pdf-flashcard {
+  background-color: #a855f7;
+  opacity: 0.6;
+  border-bottom: 2px dashed #7c3aed;
+}
+
+/* Annotation hover effect */
+.annotation-hover {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  transition: box-shadow 0.2s ease;
+}
+
+/* Ensure wrapper has proper sizing */
+.pdf-viewer-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+/* Fix for PDF viewer container */
+.rpv-core__viewer {
+  height: 100% !important;
+}
+
+/* Ensure the inner container allows scrolling */
+.rpv-core__inner-container {
+  height: 100% !important;
+  overflow: auto !important;
+}
+
+/* Ensure pages container is visible */
+.rpv-core__inner-pages {
+  position: relative !important;
+}
+
+/* Fix default layout container */
+.rpv-default-layout__container {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure toolbar is visible */
+.rpv-default-layout__toolbar {
+  flex-shrink: 0 !important;
+  z-index: 10;
+}
+
+/* Ensure body takes remaining space */
+.rpv-default-layout__body {
+  flex: 1 !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* Fix main body to allow scrolling */
+.rpv-default-layout__body-content {
+  flex: 1 !important;
+  overflow: auto !important;
+  height: 100% !important;
+}
+
+/* Ensure pages container is scrollable */
+.rpv-core__page-container {
+  overflow: auto !important;
+}
+
+/* Fix for sidebar taking up space even when closed */
+.rpv-default-layout__sidebar {
+  display: none !important;
+}
+
+/* Ensure main body takes full width */
+.rpv-default-layout__body {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Annotation menu animations */
+.annotation-menu {
+  animation: annotationMenuFadeIn 0.2s ease-out;
+}
+
+@keyframes annotationMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Pulse animation for text selection target */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Smooth transitions for highlight overlays */
+.pdf-highlight-overlay {
+  transition: all 0.2s ease;
+}
+
+.pdf-highlight-overlay:hover {
+  opacity: 0.6 !important;
+  transform: scale(1.02);
+}
+
+/* Annotation menu styles */
+.annotation-menu {
+  z-index: 9999;
+}
+
+/* Highlight plugin selection styles */
+.rpv-highlight__area {
+  mix-blend-mode: multiply;
+}
+
+/* Rendered highlight fixes */
+.pdf-highlight-rendered {
+  /* Ensure highlights stay within page boundaries */
+  box-sizing: border-box;
+  /* Improve text selection through highlights */
+  user-select: none;
+  /* Ensure consistent rendering */
+  backface-visibility: hidden;
+  /* Fix layering issues */
+  isolation: isolate;
+}
+
+/* Fix for highlight positioning in transformed containers */
+.rpv-core__page-layer .pdf-highlight-rendered {
+  /* Ensure highlights align with text regardless of zoom */
+  transform-style: preserve-3d;
+}
+
+/* Custom highlight colors */
+.highlight-yellow {
+  background-color: #ffeb3b;
+}
+
+.highlight-green {
+  background-color: #4ade80;
+}
+
+.highlight-blue {
+  background-color: #60a5fa;
+}
+
+.highlight-red {
+  background-color: #f87171;
+}
+
+.highlight-purple {
+  background-color: #c084fc;
+}

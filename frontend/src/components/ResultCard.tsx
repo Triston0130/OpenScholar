@@ -4,6 +4,7 @@ import { getPaperCollections, addPaperToCollection, removePaperFromCollection } 
 import { formatCitation } from '../utils/citationFormatter';
 import { generateAccessLinks, AccessLink } from '../utils/proxy';
 import CollectionSelector from './CollectionSelector';
+import PDFViewerSmart from './PDFViewerSmart';
 
 interface ResultCardProps {
   paper: Paper;
@@ -25,6 +26,9 @@ const ResultCard: React.FC<ResultCardProps> = ({
   const [showCollectionSelector, setShowCollectionSelector] = useState(false);
   const [paperCollections, setPaperCollections] = useState<any[]>([]);
   const [accessLinks, setAccessLinks] = useState<AccessLink[]>([]);
+  const [showPDFViewer, setShowPDFViewer] = useState(false);
+  const [extractedPdfUrl, setExtractedPdfUrl] = useState<string | null>(null);
+  const [isExtractingPdf, setIsExtractingPdf] = useState(false);
   const citationMenuRef = useRef<HTMLDivElement>(null);
 
   const updatePaperCollections = useCallback(() => {
@@ -93,6 +97,18 @@ const ResultCard: React.FC<ResultCardProps> = ({
       'PubMed Central': 'bg-orange-100 text-orange-800 hover:bg-orange-200',
       'PubMed': 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200',
       'Semantic Scholar': 'bg-teal-100 text-teal-800 hover:bg-teal-200',
+      // Book sources
+      'DOAB': 'bg-amber-100 text-amber-800 hover:bg-amber-200',
+      'Project Gutenberg': 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200',
+      'Internet Archive': 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200',
+      'Open Library': 'bg-rose-100 text-rose-800 hover:bg-rose-200',
+      // OER sources
+      'Open Textbook Library': 'bg-lime-100 text-lime-800 hover:bg-lime-200',
+      'Pressbooks': 'bg-violet-100 text-violet-800 hover:bg-violet-200',
+      'LibreTexts': 'bg-fuchsia-100 text-fuchsia-800 hover:bg-fuchsia-200',
+      'MERLOT': 'bg-sky-100 text-sky-800 hover:bg-sky-200',
+      'OER Commons': 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+      'MIT OpenCourseWare': 'bg-slate-100 text-slate-800 hover:bg-slate-200',
     };
     return colors[source] || 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   };
@@ -106,6 +122,18 @@ const ResultCard: React.FC<ResultCardProps> = ({
       'PubMed Central': 'https://www.ncbi.nlm.nih.gov/pmc/',
       'PubMed': 'https://pubmed.ncbi.nlm.nih.gov/',
       'Semantic Scholar': 'https://www.semanticscholar.org/',
+      // Book sources
+      'DOAB': 'https://www.doabooks.org/',
+      'Project Gutenberg': 'https://www.gutenberg.org/',
+      'Internet Archive': 'https://archive.org/',
+      'Open Library': 'https://openlibrary.org/',
+      // OER sources
+      'Open Textbook Library': 'https://open.umn.edu/opentextbooks/',
+      'Pressbooks': 'https://pressbooks.com/',
+      'LibreTexts': 'https://libretexts.org/',
+      'MERLOT': 'https://www.merlot.org/',
+      'OER Commons': 'https://www.oercommons.org/',
+      'MIT OpenCourseWare': 'https://ocw.mit.edu/',
     };
     return urls[source] || '#';
   };
@@ -193,6 +221,67 @@ const ResultCard: React.FC<ResultCardProps> = ({
             {paperCollections.length > 0 ? `Saved (${paperCollections.length})` : 'Save'}
           </button>
 
+          {/* View PDF Button */}
+          {paper.full_text_url && (
+            <button
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[ResultCard] PDF button clicked, checking if extraction needed for:', paper.full_text_url);
+                
+                // Check if this is from Open Textbook Library or LibreTexts and needs PDF extraction
+                const needsExtraction = paper.source === 'Open Textbook Library' || paper.source === 'LibreTexts';
+                
+                if (needsExtraction && !extractedPdfUrl) {
+                  setIsExtractingPdf(true);
+                  try {
+                    const response = await fetch('/extract-pdf-url', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ url: paper.full_text_url })
+                    });
+                    
+                    if (response.ok) {
+                      const data = await response.json();
+                      console.log('[ResultCard] PDF extraction result:', data);
+                      setExtractedPdfUrl(data.pdf_url);
+                    } else {
+                      console.error('[ResultCard] PDF extraction failed, using original URL');
+                      setExtractedPdfUrl(paper.full_text_url || null);
+                    }
+                  } catch (error) {
+                    console.error('[ResultCard] PDF extraction error:', error);
+                    setExtractedPdfUrl(paper.full_text_url || null);
+                  } finally {
+                    setIsExtractingPdf(false);
+                  }
+                }
+                
+                setShowPDFViewer(true);
+              }}
+              className="flex items-center px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors"
+              title="View PDF with annotations"
+              disabled={isExtractingPdf}
+            >
+              {isExtractingPdf ? (
+                <>
+                  <svg className="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  View PDF
+                </>
+              )}
+            </button>
+          )}
+
           {/* Copy Citation Dropdown */}
           <div className="relative" ref={citationMenuRef}>
           <button
@@ -264,6 +353,26 @@ const ResultCard: React.FC<ResultCardProps> = ({
             📄 {paper.journal}
           </span>
         )}
+        {paper.publisher && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            🏢 {paper.publisher}
+          </span>
+        )}
+        {paper.content_type === 'book' && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            📚 Book
+          </span>
+        )}
+        {paper.page_count && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            📄 {paper.page_count} pages
+          </span>
+        )}
+        {paper.language && paper.language !== 'en' && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            🌐 {paper.language.toUpperCase()}
+          </span>
+        )}
       </div>
 
       {/* Abstract with Keyword Highlighting */}
@@ -314,20 +423,76 @@ const ResultCard: React.FC<ResultCardProps> = ({
           </a>
         ))}
 
-        {/* Citation Count */}
-        {paper.citation_count !== null && paper.citation_count !== undefined && (
+        {/* Citation Count or Download Formats */}
+        {paper.content_type === 'book' && paper.download_formats ? (
+          <div className="inline-flex items-center text-sm px-3 py-1.5">
+            <svg className="w-4 h-4 mr-1.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span className="text-green-600 font-medium">Available: </span>
+            <div className="flex gap-1 ml-1">
+              {paper.download_formats.map((format, index) => (
+                <span key={index} className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded font-medium">
+                  {format.toUpperCase()}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : (
           <div className="inline-flex items-center text-sm text-gray-600 px-3 py-1.5">
             <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
-            {paper.citation_count.toLocaleString()} citation{paper.citation_count !== 1 ? 's' : ''}
-            {paper.influential_citation_count !== null && paper.influential_citation_count !== undefined && paper.influential_citation_count > 0 && (
-              <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium" title="Influential citations">
-                {paper.influential_citation_count} influential
+            {paper.citation_count !== null && paper.citation_count !== undefined ? (
+              <>
+                {paper.citation_count.toLocaleString()} citation{paper.citation_count !== 1 ? 's' : ''}
+                {paper.influential_citation_count !== null && paper.influential_citation_count !== undefined && paper.influential_citation_count > 0 && (
+                  <span className="ml-2 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium" title="Influential citations">
+                    {paper.influential_citation_count} influential
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-gray-400">{paper.content_type === 'book' ? 'Book resource' : 'Citations loading...'}</span>
+            )}
+          </div>
+        )}
+
+        {/* Relevance Score Indicator */}
+        {paper.relevance_score && (
+          <div className="inline-flex items-center text-sm px-3 py-1.5" title="Search relevance score">
+            <svg className="w-4 h-4 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            <span className="text-blue-600 font-medium">
+              {Math.round(paper.relevance_score * 100)}% relevance
+            </span>
+            {paper.relevance_factors?.exact_phrase_match && (
+              <span className="ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium" title="Contains exact phrase match">
+                ✓ Exact match
               </span>
             )}
           </div>
         )}
+
+        {/* Quality Indicators */}
+        <div className="flex items-center gap-2">
+          {parseInt(paper.year) >= 2020 && (
+            <span className="inline-flex items-center px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium" title="Recent publication">
+              🕐 Recent
+            </span>
+          )}
+          {paper.citation_count && paper.citation_count >= 50 && (
+            <span className="inline-flex items-center px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium" title="Highly cited">
+              ⭐ Popular
+            </span>
+          )}
+          {paper.journal && (paper.journal.toLowerCase().includes('nature') || paper.journal?.toLowerCase().includes('science') || paper.journal?.toLowerCase().includes('cell')) && (
+            <span className="inline-flex items-center px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium" title="High-impact journal">
+              🏆 Top journal
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Collection Selector Modal */}
@@ -338,6 +503,19 @@ const ResultCard: React.FC<ResultCardProps> = ({
         onSaveToCollection={handleSaveToCollection}
         onRemoveFromCollection={handleRemoveFromCollection}
       />
+
+      {/* PDF Viewer Modal */}
+      {showPDFViewer && paper.full_text_url && (
+        <PDFViewerSmart
+          paper={paper}
+          pdfUrl={extractedPdfUrl || paper.full_text_url}
+          collectionId={paperCollections.length > 0 ? paperCollections[0].id : undefined}
+          onClose={() => {
+            setShowPDFViewer(false);
+            // Don't reset extractedPdfUrl to avoid re-extraction next time
+          }}
+        />
+      )}
     </div>
   );
 };

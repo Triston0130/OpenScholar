@@ -1,7 +1,9 @@
 import { Paper } from '../types';
 import { exportCitations } from './citationFormatter';
+import { v4 as uuidv4 } from 'uuid';
 
 const COLLECTIONS_KEY = 'openscholar_collections';
+const DEFAULT_COLLECTION_UUID = '00000000-0000-0000-0000-000000000000';
 
 export interface Collection {
   id: string;
@@ -34,6 +36,54 @@ export interface CollectionWithPapers extends Collection {
   folders: Folder[];
 }
 
+// Sync local collections with backend
+export const syncCollectionsWithBackend = async (): Promise<void> => {
+  try {
+    const accessToken = localStorage.getItem('openscholar_access_token');
+    if (!accessToken) return;
+    
+    const { getCollections: getBackendCollections, createCollection: createBackendCollection } = await import('./api');
+    
+    // Get collections from both sources
+    const localData = getCollectionsData();
+    const localCollections = localData.collections || [];
+    const backendCollections = await getBackendCollections();
+    
+    // Create a map of backend collections by name for easy lookup
+    const backendByName = new Map(backendCollections.map(c => [c.name, c]));
+    
+    // Sync local collections to backend
+    for (const localCollection of localCollections) {
+      const backendCollection = backendByName.get(localCollection.name);
+      
+      if (!backendCollection && localCollection.id !== DEFAULT_COLLECTION_UUID) {
+        // Create in backend if it doesn't exist
+        try {
+          const created = await createBackendCollection({
+            name: localCollection.name,
+            description: localCollection.description,
+            color: localCollection.color,
+            is_public: false
+          });
+          
+          // Update local collection with backend ID
+          localCollection.id = created.id;
+        } catch (error) {
+          console.error(`Failed to sync collection ${localCollection.name} to backend:`, error);
+        }
+      } else if (backendCollection) {
+        // Update local collection ID to match backend
+        localCollection.id = backendCollection.id;
+      }
+    }
+    
+    // Save updated local data
+    saveCollectionsData(localData);
+  } catch (error) {
+    console.error('Failed to sync collections with backend:', error);
+  }
+};
+
 // Collection Management
 export const getCollections = (): Collection[] => {
   try {
@@ -43,7 +93,7 @@ export const getCollections = (): Collection[] => {
     // Ensure default collection exists
     if (collections.length === 0) {
       const defaultCollection: Collection = {
-        id: 'default',
+        id: DEFAULT_COLLECTION_UUID,
         name: 'My Papers',
         description: 'Default collection for saved papers',
         createdAt: new Date().toISOString(),
@@ -62,7 +112,42 @@ export const getCollections = (): Collection[] => {
   }
 };
 
-export const createCollection = (name: string, description?: string, color?: string): Collection => {
+export const createCollection = async (name: string, description?: string, color?: string): Promise<Collection> => {
+  try {
+    // First try to create in backend if user is authenticated
+    const accessToken = localStorage.getItem('openscholar_access_token');
+    if (accessToken) {
+      const { createCollection: createBackendCollection } = await import('./api');
+      const backendCollection = await createBackendCollection({
+        name,
+        description,
+        color: color || getRandomColor(),
+        is_public: false
+      });
+      
+      // Create local collection with backend ID
+      const collection: Collection = {
+        id: backendCollection.id,
+        name: backendCollection.name,
+        description: backendCollection.description,
+        createdAt: backendCollection.created_at.toString(),
+        updatedAt: backendCollection.updated_at?.toString() || backendCollection.created_at.toString(),
+        color: backendCollection.color || getRandomColor()
+      };
+      
+      const data = getCollectionsData();
+      data.collections.push(collection);
+      saveCollectionsData(data);
+      dispatchCollectionsChange();
+      
+      return collection;
+    }
+  } catch (error) {
+    console.error('Failed to create collection in backend:', error);
+    // Fall through to local-only creation
+  }
+  
+  // Fallback to local-only collection
   const collection: Collection = {
     id: generateId(),
     name,
@@ -75,6 +160,7 @@ export const createCollection = (name: string, description?: string, color?: str
   const data = getCollectionsData();
   data.collections.push(collection);
   saveCollectionsData(data);
+  dispatchCollectionsChange();
   
   return collection;
 };
@@ -93,7 +179,7 @@ export const updateCollection = (id: string, updates: Partial<Collection>): void
 };
 
 export const deleteCollection = (id: string): void => {
-  if (id === 'default') return; // Can't delete default collection
+  if (id === DEFAULT_COLLECTION_UUID) return; // Can't delete default collection
   
   const data = getCollectionsData();
   data.collections = data.collections.filter((c: Collection) => c.id !== id);
@@ -103,31 +189,86 @@ export const deleteCollection = (id: string): void => {
   dispatchCollectionsChange();
 };
 
+// Helper function to find existing tags and notes for a paper across all collections
+const findExistingPaperMetadata = (paper: Paper, data: CollectionsData): { tags: string[], notes: string } => {
+  let existingTags: string[] = [];
+  let existingNotes: string = '';
+  
+  // Search through all collections for this paper
+  for (const [collId, papers] of Object.entries(data.papers)) {
+    if (Array.isArray(papers)) {
+      const existingPaper = papers.find((p: SavedPaper) => 
+        (paper.doi && p.doi === paper.doi) || p.title === paper.title
+      );
+      
+      if (existingPaper) {
+        // Merge tags (avoiding duplicates)
+        if (existingPaper.tags && existingPaper.tags.length > 0) {
+          existingTags = Array.from(new Set([...existingTags, ...existingPaper.tags]));
+        }
+        
+        // Use the longest/most detailed notes
+        if (existingPaper.notes && existingPaper.notes.length > existingNotes.length) {
+          existingNotes = existingPaper.notes;
+        }
+      }
+    }
+  }
+  
+  return { tags: existingTags, notes: existingNotes };
+};
+
 // Paper Management
-export const addPaperToCollection = (
+export const addPaperToCollection = async (
   paper: Paper, 
   collectionId: string, 
   tags: string[] = [], 
   notes: string = '',
-  folderId?: string
-): void => {
+  folderId?: string,
+  pdfFile?: File
+): Promise<void> => {
+  // If we have a PDF file, upload it first and update the paper's full_text_url
+  let paperToSave = { ...paper };
+  
+  if (pdfFile) {
+    try {
+      // Import the upload function
+      const { uploadPdf } = await import('./api');
+      const pdfUrl = await uploadPdf(pdfFile);
+      paperToSave.full_text_url = pdfUrl;
+    } catch (error) {
+      console.error('Failed to upload PDF:', error);
+      // Continue without the uploaded PDF
+    }
+  }
+  
   const data = getCollectionsData();
   
   if (!data.papers[collectionId]) {
     data.papers[collectionId] = [];
   }
   
+  // If no tags/notes provided, check if paper exists in other collections
+  let finalTags = tags;
+  let finalNotes = notes;
+  
+  if (tags.length === 0 && notes === '') {
+    const existing = findExistingPaperMetadata(paperToSave, data);
+    finalTags = existing.tags;
+    finalNotes = existing.notes;
+  }
+  
   const savedPaper: SavedPaper = {
-    ...paper,
+    ...paperToSave,
     savedAt: new Date().toISOString(),
-    tags: tags,
-    notes: notes,
+    tags: finalTags,
+    notes: finalNotes,
     folderId: folderId
   };
   
   // Check if already in collection
   const isAlreadySaved = data.papers[collectionId].some((p: SavedPaper) => 
-    (paper.doi && p.doi === paper.doi) || p.title === paper.title
+    (paperToSave.doi && p.doi === paperToSave.doi) || p.title === paperToSave.title
   );
   
   if (!isAlreadySaved) {
@@ -293,10 +434,74 @@ interface CollectionsData {
   folders: Record<string, Folder[]>;
 }
 
+// Check if a string is a valid UUID
+const isValidUUID = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
+// Migrate old collection IDs to UUIDs
+const migrateCollectionIds = (data: CollectionsData): CollectionsData => {
+  const idMap: { [oldId: string]: string } = {};
+  let needsMigration = false;
+
+  // Check if any collections need migration
+  data.collections.forEach((collection: Collection) => {
+    if (!isValidUUID(collection.id)) {
+      needsMigration = true;
+      const newId = collection.id === 'default' ? DEFAULT_COLLECTION_UUID : uuidv4();
+      idMap[collection.id] = newId;
+    }
+  });
+
+  if (!needsMigration) {
+    return data;
+  }
+
+  // Migrate collections
+  data.collections = data.collections.map((collection: Collection) => {
+    if (idMap[collection.id]) {
+      return { ...collection, id: idMap[collection.id] };
+    }
+    return collection;
+  });
+
+  // Migrate papers
+  const newPapers: { [key: string]: SavedPaper[] } = {};
+  Object.entries(data.papers).forEach(([collectionId, papers]) => {
+    const newId = idMap[collectionId] || collectionId;
+    newPapers[newId] = papers;
+  });
+  data.papers = newPapers;
+
+  // Migrate folders
+  const newFolders: { [key: string]: Folder[] } = {};
+  Object.entries(data.folders).forEach(([collectionId, folders]) => {
+    const newId = idMap[collectionId] || collectionId;
+    newFolders[newId] = folders.map((folder: Folder) => ({
+      ...folder,
+      collectionId: newId
+    }));
+  });
+  data.folders = newFolders;
+
+  return data;
+};
+
 const getCollectionsData = (): CollectionsData => {
   try {
     const data = localStorage.getItem(COLLECTIONS_KEY);
-    return data ? JSON.parse(data) : { collections: [], papers: {}, folders: {} };
+    const parsedData = data ? JSON.parse(data) : { collections: [], papers: {}, folders: {} };
+    
+    // Migrate old IDs to UUIDs
+    const migratedData = migrateCollectionIds(parsedData);
+    
+    // Save migrated data if it was changed
+    if (data && JSON.stringify(parsedData) !== JSON.stringify(migratedData)) {
+      localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(migratedData));
+    }
+    
+    return migratedData;
   } catch (error) {
     console.error('Error parsing collections data:', error);
     return { collections: [], papers: {}, folders: {} };
@@ -316,7 +521,7 @@ const dispatchCollectionsChange = () => {
 };
 
 const generateId = (): string => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return uuidv4();
 };
 
 const getRandomColor = (): string => {

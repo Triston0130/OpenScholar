@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIT OpenCourseWare API Setup Guide - OpenScholar</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #1f2937;
+            margin-top: 30px;
+        }
+        .step {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #2563eb;
+        }
+        code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.9em;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background: #1d4ed8;
+        }
+        .note {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MIT OpenCourseWare API Setup Guide</h1>
+        
+        <p>This guide will help you set up Google Custom Search Engine (CSE) to enable full-text search of MIT OpenCourseWare materials in OpenScholar.</p>
+        
+        <div class="note">
+            <strong>Why is this needed?</strong> MIT OCW doesn't provide a public API. Without Google CSE, searches return only 1-5 results. With CSE, you can search all 2,600+ courses!
+        </div>
+
+        <h2>Step 1: Create a Google Custom Search Engine</h2>
+        
+        <div class="step">
+            <p>1. Go to <a href="https://programmablesearchengine.google.com/" target="_blank">Google Programmable Search Engine</a></p>
+            <p>2. Click "Get started" or "Add"</p>
+            <p>3. Configure your search engine:</p>
+            <ul>
+                <li><strong>Search engine name:</strong> MIT OpenCourseWare</li>
+                <li><strong>What to search:</strong> Specific sites</li>
+                <li><strong>Sites to search:</strong> <code>ocw.mit.edu/*</code></li>
+            </ul>
+            <p>4. Click "Create"</p>
+            <p>5. On the next page, copy your <strong>Search engine ID</strong> (looks like: <code>017643444788069204610:4gvhea_mvga</code>)</p>
+        </div>
+
+        <h2>Step 2: Get a Google API Key</h2>
+        
+        <div class="step">
+            <p>1. Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></p>
+            <p>2. Create a new project or select an existing one</p>
+            <p>3. Enable the Custom Search API:</p>
+            <ul>
+                <li>Navigate to "APIs & Services" → "Library"</li>
+                <li>Search for "Custom Search API"</li>
+                <li>Click on it and press "Enable"</li>
+            </ul>
+            <p>4. Create an API key:</p>
+            <ul>
+                <li>Go to "APIs & Services" → "Credentials"</li>
+                <li>Click "Create Credentials" → "API Key"</li>
+                <li>Copy the API key</li>
+            </ul>
+        </div>
+
+        <h2>Step 3: Configure OpenScholar</h2>
+        
+        <div class="step">
+            <p>1. Return to OpenScholar</p>
+            <p>2. Paste your Google API key in the configuration modal</p>
+            <p>3. Set your CSE ID as an environment variable on your server:</p>
+            <code>export MIT_OCW_CSE_ID='your-cse-id-here'</code>
+        </div>
+
+        <div class="success">
+            <strong>Success!</strong> Once configured, MIT OpenCourseWare will show a green shield icon and you'll be able to search all MIT courses.
+        </div>
+
+        <h2>Useful Links</h2>
+        <a href="https://programmablesearchengine.google.com/" class="button" target="_blank">Create Search Engine</a>
+        <a href="https://console.cloud.google.com/apis/library/customsearch.googleapis.com" class="button" target="_blank">Enable API</a>
+        <a href="https://console.cloud.google.com/apis/credentials" class="button" target="_blank">Get API Key</a>
+
+        <h2>Troubleshooting</h2>
+        
+        <div class="step">
+            <p><strong>No results returned?</strong></p>
+            <ul>
+                <li>Verify the API is enabled in Google Cloud Console</li>
+                <li>Check that your CSE is configured to search <code>ocw.mit.edu</code></li>
+                <li>Ensure your API key has no restrictions or includes Custom Search API</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <p><strong>Quota exceeded?</strong></p>
+            <ul>
+                <li>Free tier: 100 searches/day</li>
+                <li>Paid tier: $5 per 1,000 queries</li>
+                <li>OpenScholar will fall back to basic search if quota is exceeded</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

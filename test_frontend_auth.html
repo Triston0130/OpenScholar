@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend Auth</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Test Authentication</h1>
+    
+    <div>
+        <h2>Register</h2>
+        <input type="email" id="email" placeholder="Email" value="jstest@example.com">
+        <input type="text" id="username" placeholder="Username" value="jsuser">
+        <input type="password" id="password" placeholder="Password" value="JSPass123">
+        <input type="text" id="fullname" placeholder="Full Name" value="JS Test User">
+        <button onclick="testRegister()">Register</button>
+    </div>
+    
+    <div>
+        <h2>Login</h2>
+        <input type="text" id="loginUser" placeholder="Username/Email" value="jsuser">
+        <input type="password" id="loginPass" placeholder="Password" value="JSPass123">
+        <button onclick="testLogin()">Login</button>
+    </div>
+    
+    <div id="result"></div>
+
+    <script>
+        // Configure axios like the frontend does
+        axios.defaults.baseURL = 'http://127.0.0.1:8000';
+        
+        async function testRegister() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Registering...';
+            
+            try {
+                const response = await axios.post('/api/auth/register', {
+                    email: document.getElementById('email').value,
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+                    full_name: document.getElementById('fullname').value
+                });
+                
+                result.innerHTML = `<h3>Registration Success!</h3><pre>${JSON.stringify(response.data, null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<h3>Registration Error!</h3><pre>${JSON.stringify(error.response?.data || error.message, null, 2)}</pre>`;
+                console.error('Registration error:', error);
+            }
+        }
+        
+        async function testLogin() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Logging in...';
+            
+            try {
+                const response = await axios.post('/api/auth/login', {
+                    email_or_username: document.getElementById('loginUser').value,
+                    password: document.getElementById('loginPass').value
+                });
+                
+                result.innerHTML = `<h3>Login Success!</h3><pre>${JSON.stringify(response.data, null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<h3>Login Error!</h3><pre>${JSON.stringify(error.response?.data || error.message, null, 2)}</pre>`;
+                console.error('Login error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

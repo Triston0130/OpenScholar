@@ -26,6 +26,9 @@ class BM25Scorer:
     
     def fit(self, papers: List[Paper]):
         """Fit the BM25 model on the corpus of papers"""
+        if not papers:
+            return
+            
         self.total_docs = len(papers)
         self.doc_lengths = []
         term_doc_counts = Counter()
@@ -52,7 +55,12 @@ class BM25Scorer:
     
     def score(self, query: str, paper: Paper, index: int) -> float:
         """Calculate BM25 score for a paper given a query"""
+        if not query or not paper:
+            return 0.0
+            
         query_terms = self._tokenize(query.lower())
+        if not query_terms:
+            return 0.0
         
         # Combine paper fields with weight for title
         doc_text = f"{paper.title} {paper.title} {paper.abstract} {paper.journal or ''}"
@@ -75,6 +83,16 @@ class BM25Scorer:
         # Boost score for exact phrase matches in title
         if query.lower() in paper.title.lower():
             score *= 2.0
+        
+        # Additional boost if ALL query terms appear in title+abstract
+        query_words = set(query.lower().split())
+        title_words = set(paper.title.lower().split()) if paper.title else set()
+        abstract_words = set(paper.abstract.lower().split()) if paper.abstract else set()
+        paper_words = title_words | abstract_words
+        
+        # Check if all query words appear
+        if query_words and query_words.issubset(paper_words):
+            score *= 1.5  # Boost for containing all terms
         
         # Boost for recent papers (slight recency bias)
         try:
@@ -106,8 +124,9 @@ class BM25Scorer:
         text = re.sub(r'<[^>]+>', '', text)
         # Split on non-word characters
         tokens = re.findall(r'\b\w+\b', text)
-        # Filter out very short words and numbers
-        return [token for token in tokens if len(token) > 2 and not token.isdigit()]
+        # Filter out very short words (but keep important 2-letter words) and numbers
+        # Keep words like: to, in, on, of, is, it, etc. as they might be important
+        return [token for token in tokens if (len(token) > 1 or token in ['a', 'i']) and not token.isdigit()]
 
 
 def calculate_relevance_scores(papers: List[Paper], query: str) -> List[Dict[str, Any]]:

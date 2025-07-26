@@ -6,26 +6,38 @@ import ExportBar from '../components/ExportBar';
 import Pagination from '../components/Pagination';
 import CollectionsOverview from '../components/CollectionsOverview';
 import SettingsModal from '../components/SettingsModal';
+import UserProfile from '../components/UserProfile';
+import AuthModal from '../components/AuthModal';
+import ProfileSettingsModal from '../components/ProfileSettingsModal';
+import EmailSettings from '../components/EmailSettings';
 import { Paper, SearchRequest } from '../types';
 import { searchPapers, exportPapers, downloadFile } from '../utils/api';
 import { getAllCollectionsWithPapers, addPaperToCollection } from '../utils/collections';
 import { getProxySettings } from '../utils/proxy';
 import CollectionSelector from '../components/CollectionSelector';
+import SearchRelevanceInfo from '../components/SearchRelevanceInfo';
+import { getAllAnnotations } from '../utils/annotations';
 
 interface PaginationCache {
   [key: string]: {
     papers: Paper[];
     sourcesQueried: string[];
+    sourceCounts?: Record<string, number>;
     totalResults: number;
   };
 }
 
-const SearchPage: React.FC = () => {
+interface SearchPageProps {
+  onNavigate: (page: 'search' | 'flashcards' | 'landing') => void;
+}
+
+const SearchPage: React.FC<SearchPageProps> = ({ onNavigate }) => {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [sourcesQueried, setSourcesQueried] = useState<string[]>([]);
+  const [sourceCounts, setSourceCounts] = useState<Record<string, number>>({});
   const [totalResults, setTotalResults] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
@@ -33,6 +45,9 @@ const SearchPage: React.FC = () => {
   const [currentSearchRequest, setCurrentSearchRequest] = useState<SearchRequest | null>(null);
   const [showCollections, setShowCollections] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showProfileSettings, setShowProfileSettings] = useState(false);
+  const [showEmailSettings, setShowEmailSettings] = useState(false);
   const [totalSavedCount, setTotalSavedCount] = useState(0);
   const [proxySettings, setProxySettings] = useState(getProxySettings());
   const [selectedPapers, setSelectedPapers] = useState<Paper[]>([]);
@@ -128,6 +143,8 @@ const SearchPage: React.FC = () => {
   };
 
   // Generate unique search ID to ensure cache isolation between searches
+  // IMPORTANT: Don't include page, per_page, or sort_by in the search ID
+  // as these are handled separately in the cache key
   const generateSearchId = (searchRequest: SearchRequest) => {
     const searchParams = {
       query: searchRequest.query,
@@ -153,6 +170,7 @@ const SearchPage: React.FC = () => {
       const cached = paginationCache[cacheKey];
       setPapers(cached.papers);
       setSourcesQueried(cached.sourcesQueried);
+      setSourceCounts(cached.sourceCounts || {});
       setTotalResults(cached.totalResults);
       return;
     }
@@ -163,6 +181,7 @@ const SearchPage: React.FC = () => {
       const response = await searchPapers(searchRequest);
       setPapers(response.papers);
       setSourcesQueried(response.sources_queried);
+      setSourceCounts(response.source_counts || {});
       setTotalResults(response.total_results);
       
       // Cache the result
@@ -171,6 +190,7 @@ const SearchPage: React.FC = () => {
         [cacheKey]: {
           papers: response.papers,
           sourcesQueried: response.sources_queried,
+          sourceCounts: response.source_counts || {},
           totalResults: response.total_results
         }
       }));
@@ -187,6 +207,8 @@ const SearchPage: React.FC = () => {
       console.error('Search error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to search papers');
       setPapers([]);
+      setSourceCounts({});  // Reset source counts on error
+      setTotalResults(0);
       if (isNewSearch) {
         setSearchPerformed(true);
       }
@@ -287,11 +309,11 @@ const SearchPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <div className="text-center flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                OpenScholar
+              <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                🎓 OpenScholar
               </h1>
-              <p className="text-lg text-gray-600">
-                Search peer-reviewed, open-access research papers in education and child development
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Your gateway to open-access academic research — no paywalls, no limits
               </p>
             </div>
             
@@ -313,16 +335,30 @@ const SearchPage: React.FC = () => {
               </button>
               
               <button
-                onClick={() => setShowSettings(true)}
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                title="University Access Settings"
+                onClick={() => onNavigate('flashcards')}
+                className="flex items-center px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-md hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-md"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                Settings
+                Flashcards
+                {(() => {
+                  const flashcardCount = getAllAnnotations().filter(a => a.type === 'flashcard').length;
+                  return flashcardCount > 0 ? (
+                    <span className="ml-1 px-2 py-0.5 text-xs font-medium bg-white/20 text-white rounded-full">
+                      {flashcardCount}
+                    </span>
+                  ) : null;
+                })()}
               </button>
+              
+              {/* User Profile / Login */}
+              <UserProfile 
+                onOpenAuth={() => setShowAuth(true)} 
+                onOpenSettings={() => setShowProfileSettings(true)}
+                onOpenEmailSettings={() => setShowEmailSettings(true)}
+                onOpenProxySettings={() => setShowSettings(true)}
+              />
             </div>
           </div>
         </div>
@@ -330,6 +366,45 @@ const SearchPage: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section - only show when no search has been performed */}
+        {!searchPerformed && (
+          <div className="text-center mb-12">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Discover Research That Matters
+              </h2>
+              <p className="text-xl text-gray-600 mb-8">
+                Search through millions of peer-reviewed papers from leading academic databases. 
+                Find evidence-based research in education, psychology, child development, and more.
+              </p>
+              
+              {/* Feature highlights */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white rounded-lg p-6 shadow-sm border">
+                  <div className="text-3xl font-bold text-blue-600 mb-2">23</div>
+                  <div className="text-sm text-gray-600">Total Sources</div>
+                  <div className="text-xs text-gray-500 mt-1">Academic papers + books</div>
+                </div>
+                <div className="bg-white rounded-lg p-6 shadow-sm border">
+                  <div className="text-3xl font-bold text-green-600 mb-2">100%</div>
+                  <div className="text-sm text-gray-600">Open Access</div>
+                  <div className="text-xs text-gray-500 mt-1">No paywalls ever</div>
+                </div>
+                <div className="bg-white rounded-lg p-6 shadow-sm border">
+                  <div className="text-3xl font-bold text-purple-600 mb-2">⚡</div>
+                  <div className="text-sm text-gray-600">Fast Search</div>
+                  <div className="text-xs text-gray-500 mt-1">30-60 second results</div>
+                </div>
+                <div className="bg-white rounded-lg p-6 shadow-sm border">
+                  <div className="text-3xl font-bold text-orange-600 mb-2">🎯</div>
+                  <div className="text-sm text-gray-600">Quality Content</div>
+                  <div className="text-xs text-gray-500 mt-1">Academic sources</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Search Form */}
         <SearchForm onSearch={handleSearch} isLoading={isLoading} />
 
@@ -379,6 +454,13 @@ const SearchPage: React.FC = () => {
                   </div>
                 )}
 
+                {/* Search Relevance Info */}
+                <SearchRelevanceInfo 
+                  totalResults={totalResults}
+                  sortBy={sortBy}
+                  searchQuery={currentSearchRequest?.query || ''}
+                />
+
                 {/* Results Summary */}
                 <div className="mb-6">
                   <div className="flex justify-between items-start mb-4">
@@ -415,15 +497,24 @@ const SearchPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <span className="text-sm text-gray-600">Sources queried:</span>
-                    {sourcesQueried.map((source, index) => (
-                      <span
-                        key={source}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                      >
-                        {source}
+                    <span className="text-sm text-gray-600">Results from sources:</span>
+                    {sourceCounts && Object.entries(sourceCounts)
+                      .filter(([_, count]) => count > 0)
+                      .sort((a, b) => b[1] - a[1])  // Sort by count descending
+                      .map(([source, count]) => (
+                        <span
+                          key={source}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                          title={`${count} results from ${source}`}
+                        >
+                          {source} ({count})
+                        </span>
+                      ))}
+                    {(!sourceCounts || Object.keys(sourceCounts).length === 0) && sourcesQueried.length > 0 && (
+                      <span className="text-xs text-gray-500 italic">
+                        Searching {sourcesQueried.length} sources...
                       </span>
-                    ))}
+                    )}
                   </div>
                 </div>
 
@@ -583,11 +674,73 @@ const SearchPage: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center text-sm text-gray-500">
-            <p>
-              OpenScholar searches peer-reviewed, open-access papers from ERIC, CORE, DOAJ, Europe PMC, and PubMed Central
+      <footer className="bg-gray-50 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Academic Sources</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• ERIC - Education research</li>
+                <li>• CORE - Open access papers*</li>
+                <li>• DOAJ - Open access journals</li>
+                <li>• Europe PMC - Life sciences</li>
+                <li>• PubMed Central - Open access</li>
+                <li>• PubMed - Biomedical literature</li>
+                <li>• Semantic Scholar - AI-powered</li>
+                <li>• arXiv - Physics & CS preprints</li>
+                <li>• Crossref - DOI database</li>
+                <li>• PLOS - Open science</li>
+                <li>• BioMed Central - Biomedical*</li>
+                <li>• BASE - Academic search*</li>
+                <li>• Unpaywall - Free versions</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Book & OER Sources</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• DOAB - Open access books</li>
+                <li>• Open Textbook Library - CC textbooks</li>
+                <li>• Pressbooks - Open textbook networks</li>
+                <li>• LibreTexts - OER textbooks</li>
+                <li>• MERLOT - Peer-reviewed OER</li>
+                <li>• OER Commons - Educational resources</li>
+                <li>• MIT OpenCourseWare - Course materials</li>
+                <li>• Project Gutenberg - Public domain</li>
+                <li>• Internet Archive - Digital library</li>
+                <li>• Open Library - Book metadata</li>
+                <li>• OpenStax - Free textbooks</li>
+                <li>• OAPEN - Academic books</li>
+                <li>• Google Books - Full access</li>
+                <li>• BHL - Biodiversity heritage*</li>
+                <li>• NLM Bookshelf - Medical texts</li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-2">* Requires API key</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Features</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• 100% open access - no paywalls</li>
+                <li>• Fast search across 29+ databases</li>
+                <li>• Advanced filtering options</li>
+                <li>• Export to multiple formats</li>
+                <li>• Save papers to collections</li>
+                <li>• Quality author filtering</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">About OpenScholar</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Your gateway to open academic research. Search millions of academic papers and books
+                without barriers or paywalls.
+              </p>
+              <p className="text-xs text-gray-500">
+                Built with ❤️ for researchers, educators, and students worldwide.
+              </p>
+            </div>
+          </div>
+          <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+            <p className="text-xs text-gray-500">
+              OpenScholar aggregates content from multiple academic databases. All papers remain property of their respective publishers.
             </p>
           </div>
         </div>
@@ -598,6 +751,42 @@ const SearchPage: React.FC = () => {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
       />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuth}
+        onClose={() => setShowAuth(false)}
+        initialMode="login"
+      />
+
+      {/* Profile Settings Modal */}
+      <ProfileSettingsModal
+        isOpen={showProfileSettings}
+        onClose={() => setShowProfileSettings(false)}
+      />
+      {/* Email Settings Modal */}
+      {showEmailSettings && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setShowEmailSettings(false)}></div>
+            </div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+              <EmailSettings />
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={() => setShowEmailSettings(false)}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bulk Collection Selector Modal */}
       {showBulkCollectionSelector && selectedPapers.length > 0 && (

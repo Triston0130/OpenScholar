@@ -1,30 +1,51 @@
 from typing import List, Optional, Dict, Any
 import httpx
+import asyncio
+import time
+import logging
 from app.models import Paper, SearchRequest
 from .base import BaseAPIClient
+
+logger = logging.getLogger(__name__)
 
 class SemanticScholarClient(BaseAPIClient):
     """Client for Semantic Scholar API - AI-powered academic search"""
     
     def __init__(self):
         super().__init__(base_url="https://api.semanticscholar.org/graph/v1/")
+        self.last_request_time = 0
+        self.min_request_interval = 1.0  # 1 second between requests
+        
         # Add User-Agent header to avoid rate limiting
         self.client.headers.update({
             "User-Agent": "OpenScholar Research Tool (Educational Academic Search)"
         })
     
+    async def _wait_for_rate_limit(self):
+        """Ensure we don't exceed rate limits"""
+        current_time = time.time()
+        time_since_last = current_time - self.last_request_time
+        
+        if time_since_last < self.min_request_interval:
+            wait_time = self.min_request_interval - time_since_last
+            await asyncio.sleep(wait_time)
+        
+        self.last_request_time = time.time()
+    
     async def search(self, query: str, year_start: Optional[int] = None, 
                     year_end: Optional[int] = None, discipline: Optional[str] = None,
                     education_level: Optional[str] = None) -> List[Paper]:
-        """Search Semantic Scholar for papers"""
+        """Search Semantic Scholar for academic papers"""
         
-        # Build query with education focus
+        await self._wait_for_rate_limit()
+        
+        # Build search query with education focus
         search_query = self._build_query(query, discipline, education_level)
         
         params = {
             "query": search_query,
             "limit": 100,
-            "fields": "title,authors,abstract,year,venue,publicationTypes,url,citationCount,influentialCitationCount,externalIds"
+            "fields": "title,authors,abstract,year,venue,publicationTypes,url,citationCount,influentialCitationCount,externalIds,isOpenAccess,openAccessPdf"
         }
         
         # Add year filter
@@ -32,12 +53,17 @@ class SemanticScholarClient(BaseAPIClient):
             params["year"] = f"{year_start}-{year_end if year_end else ''}"
         
         try:
-            response = await self.client.get(f"{self.base_url}paper/search", params=params)
+            response = await self.client.get(f"{self.base_url}paper/search", params=params, timeout=20.0)
+            response.raise_for_status()
             data = response.json()
-            
             
             papers = []
             for item in data.get("data", []):
+                # STRICT: Only include open access papers
+                if not item.get("isOpenAccess", False):
+                    logger.debug(f"Semantic Scholar paper rejected - not open access: {item.get('title', '')[:50]}...")
+                    continue
+                
                 # Skip if not peer-reviewed
                 pub_types = item.get("publicationTypes", [])
                 if pub_types and not any(t in ["JournalArticle", "Conference"] for t in pub_types):
@@ -49,21 +75,31 @@ class SemanticScholarClient(BaseAPIClient):
                 if external_ids and "DOI" in external_ids:
                     doi = external_ids["DOI"]
                 
-                # Prefer papers with DOI for full-text access
-                if not doi:
-                    continue
-                
                 # Extract authors
                 authors = []
                 for author in item.get("authors", []):
                     if author.get("name"):
                         authors.append(author["name"])
                 
-                # Use DOI link which often leads to full text, or fallback to URL
-                if doi:
+                # Get open access URL
+                full_text_url = None
+                open_access_pdf = item.get("openAccessPdf", {})
+                if open_access_pdf and open_access_pdf.get("url"):
+                    full_text_url = open_access_pdf["url"]
+                    # Verify it's not closed access
+                    if open_access_pdf.get("status") == "CLOSED":
+                        logger.debug(f"Semantic Scholar paper rejected - closed access PDF: {item.get('title', '')[:50]}...")
+                        continue
+                elif doi:
+                    # Only use DOI if we know it's open access
                     full_text_url = f"https://doi.org/{doi}"
                 else:
                     full_text_url = item.get("url", "")
+                
+                # Skip if no full text URL
+                if not full_text_url:
+                    logger.debug(f"Semantic Scholar paper rejected - no full text URL: {item.get('title', '')[:50]}...")
+                    continue
                 
                 paper = Paper(
                     title=item.get("title", ""),
@@ -78,12 +114,17 @@ class SemanticScholarClient(BaseAPIClient):
                     influential_citation_count=item.get("influentialCitationCount")
                 )
                 
-                papers.append(paper)
+                # Validate open access
+                is_oa, reason = await self.validate_open_access(paper)
+                if is_oa:
+                    papers.append(paper)
+                else:
+                    logger.debug(f"Semantic Scholar paper rejected - {reason}: {paper.title[:50]}...")
             
             return papers
             
         except Exception as e:
-            print(f"Semantic Scholar search error: {str(e)}")
+            logger.error(f"Semantic Scholar search error: {str(e)}")
             return []
     
     def _build_query(self, query: str, discipline: Optional[str], education_level: Optional[str]) -> str:
@@ -142,5 +183,5 @@ class SemanticScholarClient(BaseAPIClient):
             return paper
             
         except Exception as e:
-            print(f"Error normalizing Semantic Scholar paper: {str(e)}")
+            logger.error(f"Error normalizing Semantic Scholar paper: {str(e)}")
             return None

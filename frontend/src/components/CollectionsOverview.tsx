@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { getAllCollectionsWithPapers, deleteCollection, updateCollection, exportCollection, getCollectionStats, Collection, updatePaperTagsAndNotes, getAllTags, SavedPaper, addPaperToCollection, Folder, createFolder, updateFolder, deleteFolder, getFolderPapers, movePaperToFolder } from '../utils/collections';
+import { getAllCollectionsWithPapers, deleteCollection, updateCollection, exportCollection, getCollectionStats, Collection, updatePaperTagsAndNotes, getAllTags, SavedPaper, addPaperToCollection, Folder, createFolder, updateFolder, deleteFolder, getFolderPapers, movePaperToFolder, createCollection } from '../utils/collections';
 import CreateCollectionModal from './CreateCollectionModal';
 import AddExternalPaperModal from './AddExternalPaperModal';
+import AIProcessingEnhanced from './AIProcessingEnhanced';
+import ShareCollectionModal from './ShareCollectionModal';
+import CollectionBackupModal from './CollectionBackupModal';
 import ResultCard from './ResultCard';
 import { Paper } from '../types';
+import { shareCollection } from '../utils/api';
 
 interface CollectionsOverviewProps {
   onBackToSearch?: () => void;
@@ -29,9 +33,25 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
   const [newFolderName, setNewFolderName] = useState('');
   const [editingFolder, setEditingFolder] = useState<string | null>(null);
   const [editFolderName, setEditFolderName] = useState('');
+  const [showFolderMenu, setShowFolderMenu] = useState<string | null>(null);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiProcessingTarget, setAIProcessingTarget] = useState<{ collectionId: string; folderId?: string } | null>(null);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+  const [globalSearchType, setGlobalSearchType] = useState<'all' | 'tags' | 'notes' | 'title'>('all');
+  const [searchResults, setSearchResults] = useState<{collectionId: string; collectionName: string; papers: SavedPaper[]}[]>([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [collectionToShare, setCollectionToShare] = useState<Collection | null>(null);
+  const [showBackupModal, setShowBackupModal] = useState(false);
 
   useEffect(() => {
     loadCollections();
+    // Sync collections with backend when component mounts
+    const syncCollections = async () => {
+      const { syncCollectionsWithBackend } = await import('../utils/collections');
+      await syncCollectionsWithBackend();
+      loadCollections(); // Reload after sync
+    };
+    syncCollections();
   }, []);
 
   useEffect(() => {
@@ -43,15 +63,84 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
     return () => window.removeEventListener('collectionsChanged', handleCollectionsChange);
   }, []);
 
+  // Close folder menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showFolderMenu) {
+        setShowFolderMenu(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showFolderMenu]);
+
+  // Trigger search when query or type changes
+  useEffect(() => {
+    performGlobalSearch();
+  }, [globalSearchQuery, globalSearchType, collections]);
+
   const loadCollections = () => {
     const allCollections = getAllCollectionsWithPapers();
     setCollections(allCollections);
     setAvailableTags(getAllTags());
   };
 
-  const handleCreateCollection = (name: string, description?: string, color?: string) => {
-    // Collection creation is handled in the modal
-    loadCollections();
+  const performGlobalSearch = () => {
+    if (!globalSearchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const query = globalSearchQuery.toLowerCase();
+    const results: {collectionId: string; collectionName: string; papers: SavedPaper[]}[] = [];
+
+    collections.forEach(collection => {
+      const matchingPapers = collection.papers.filter((paper: SavedPaper) => {
+        switch (globalSearchType) {
+          case 'tags':
+            return paper.tags?.some(tag => tag.toLowerCase().includes(query));
+          case 'notes':
+            return paper.notes?.toLowerCase().includes(query);
+          case 'title':
+            return paper.title.toLowerCase().includes(query);
+          case 'all':
+          default:
+            return (
+              paper.title.toLowerCase().includes(query) ||
+              paper.tags?.some(tag => tag.toLowerCase().includes(query)) ||
+              paper.notes?.toLowerCase().includes(query) ||
+              paper.authors?.some(author => author.toLowerCase().includes(query))
+            );
+        }
+      });
+
+      if (matchingPapers.length > 0) {
+        results.push({
+          collectionId: collection.id,
+          collectionName: collection.name,
+          papers: matchingPapers
+        });
+      }
+    });
+
+    setSearchResults(results);
+  };
+
+  const handleCreateCollection = async (name: string, description?: string, color?: string) => {
+    try {
+      const newCollection = await createCollection(name, description, color);
+      console.log('Collection created:', newCollection);
+      
+      // Reload collections to show the new one
+      loadCollections();
+      
+      // Show success feedback
+      console.log(`Collection "${name}" created successfully`);
+    } catch (error) {
+      console.error('Error creating collection:', error);
+      alert('Failed to create collection. Please try again.');
+    }
   };
 
   const handleEditCollection = (collection: Collection) => {
@@ -107,9 +196,9 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
     setEditTags(editTags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleAddExternalPaper = (paper: Paper) => {
+  const handleAddExternalPaper = (paper: Paper, pdfFile?: File) => {
     if (selectedCollection) {
-      addPaperToCollection(paper, selectedCollection, [], '', selectedFolder || undefined);
+      addPaperToCollection(paper, selectedCollection, [], '', selectedFolder || undefined, pdfFile);
       loadCollections();
     }
   };
@@ -154,6 +243,30 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
     }
   };
 
+  const handleExportFolder = (folderId: string, format: 'bibtex' | 'apa' | 'summary') => {
+    if (selectedCollection) {
+      const folderPapers = getFolderPapers(selectedCollection, folderId);
+      if (folderPapers.length === 0) {
+        alert('This folder is empty - no papers to export');
+        return;
+      }
+      
+      const folder = collections.find(c => c.id === selectedCollection)?.folders?.find((f: Folder) => f.id === folderId);
+      const folderName = folder?.name || 'folder';
+      
+      // Create a temporary collection object for export with just this folder's papers
+      const tempCollection = {
+        ...collections.find(c => c.id === selectedCollection),
+        papers: folderPapers,
+        name: folderName
+      };
+      
+      // Use the existing export function 
+      exportCollection(selectedCollection, format);
+      setShowFolderMenu(null);
+    }
+  };
+
   const handleDeleteCollection = (collectionId: string) => {
     const collection = collections.find(c => c.id === collectionId);
     if (collection && window.confirm(`Are you sure you want to delete "${collection.name}"? This will remove all papers from this collection.`)) {
@@ -187,11 +300,68 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
     setShowExportMenu(null);
   };
 
+  const handleOpenAIModal = (collectionId: string, folderId?: string) => {
+    setAIProcessingTarget({ collectionId, folderId });
+    setShowAIModal(true);
+    setShowExportMenu(null);
+    setShowFolderMenu(null);
+  };
+
+  const handleShareCollection = async (shareData: any) => {
+    if (!collectionToShare) return;
+    
+    try {
+      const result = await shareCollection(collectionToShare.id, {
+        email: shareData.email,
+        role: shareData.role,
+        can_reshare: shareData.canReshare,
+        message: shareData.message,
+        expires_in_days: shareData.expiresIn,
+        share_type: shareData.shareType
+      });
+      
+      if (shareData.shareType === 'link') {
+        // Show the share link
+        alert(`Share link created: ${window.location.origin}${result.share_link}`);
+      } else {
+        alert(`Collection shared with ${shareData.email} successfully!`);
+      }
+      
+      setShowShareModal(false);
+    } catch (error) {
+      console.error('Error sharing collection:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      alert(`Failed to share collection: ${errorMessage}`);
+    }
+  };
+
+  // AI processing is now handled by AIProcessingEnhanced component
+
   const totalPapers = collections.reduce((sum, collection) => sum + collection.papers.length, 0);
   const selectedCollectionData = selectedCollection ? collections.find(c => c.id === selectedCollection) : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <style>{`
+        .notes-content h3 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-top: 1rem;
+          margin-bottom: 0.5rem;
+          color: #1f2937;
+        }
+        .notes-content p {
+          margin-bottom: 0.75rem;
+        }
+        .notes-content ul, .notes-content ol {
+          margin-left: 1.5rem;
+          margin-bottom: 0.75rem;
+        }
+        .notes-content li {
+          margin-bottom: 0.25rem;
+        }
+      `}</style>
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -227,20 +397,84 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
               </button>
               
               {selectedCollection && (
-                <button
-                  onClick={() => setShowAddExternalModal(true)}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Add External Paper
-                </button>
+                <>
+                  <button
+                    onClick={() => setShowAddExternalModal(true)}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors mr-2"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Add External Paper
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowBackupModal(true)}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    title="Backup & Recovery"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 7h14l-1 8H6L5 7zM5 7l-1-4H2m4 4l2 10h8l2-10M9 17v2a2 2 0 002 2h2a2 2 0 002-2v-2" />
+                    </svg>
+                    Backup
+                  </button>
+                </>
               )}
             </div>
           </div>
         </div>
       </header>
+
+      {/* Global Search Bar */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1 relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={globalSearchQuery}
+                onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                placeholder="Search across all collections..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {globalSearchQuery && (
+                <button
+                  onClick={() => {
+                    setGlobalSearchQuery('');
+                    setSearchResults([]);
+                  }}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <select
+              value={globalSearchType}
+              onChange={(e) => setGlobalSearchType(e.target.value as any)}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Fields</option>
+              <option value="tags">Tags Only</option>
+              <option value="notes">Notes Only</option>
+              <option value="title">Title Only</option>
+            </select>
+          </div>
+          
+          {searchResults.length > 0 && (
+            <div className="mt-3 text-sm text-gray-600">
+              Found {searchResults.reduce((sum, r) => sum + r.papers.length, 0)} papers in {searchResults.length} collection{searchResults.length !== 1 ? 's' : ''}
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
@@ -401,6 +635,27 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
+                                          handleOpenAIModal(collection.id);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      >
+                                        🤖 Process with AI
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCollectionToShare(collection);
+                                          setShowShareModal(true);
+                                          setShowExportMenu(null);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                      >
+                                        🔗 Share Collection
+                                      </button>
+                                      <div className="border-t my-1"></div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
                                           handleEditCollection(collection);
                                           setShowExportMenu(null);
                                         }}
@@ -408,7 +663,7 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                                       >
                                         ✏️ Edit Collection
                                       </button>
-                                      {collection.id !== 'default' && (
+                                      {collection.id !== '00000000-0000-0000-0000-000000000000' && (
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
@@ -441,7 +696,148 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
 
           {/* Collection Content */}
           <div className="flex-1">
-            {selectedCollectionData ? (
+            {/* Show search results if there's an active search */}
+            {globalSearchQuery && searchResults.length > 0 ? (
+              <div>
+                <div className="bg-white rounded-lg shadow p-6 mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">
+                    🔍 Search Results
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    Showing results for "{globalSearchQuery}" in {globalSearchType === 'all' ? 'all fields' : globalSearchType}
+                  </p>
+                </div>
+                
+                {searchResults.map(result => (
+                  <div key={result.collectionId} className="mb-8">
+                    <div className="bg-gray-50 px-4 py-2 mb-3 rounded-lg flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-700">
+                        📚 {result.collectionName}
+                      </h3>
+                      <span className="text-sm text-gray-500">
+                        {result.papers.length} matching paper{result.papers.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {result.papers.map((paper: SavedPaper, index: number) => (
+                        <div key={`${paper.doi || paper.title}-${index}`}>
+                          <ResultCard paper={paper} />
+                          
+                          {/* Tags and Notes Section - Matching regular collection style */}
+                          <div className="bg-white rounded-lg shadow-md p-6 -mt-6 pt-4 border-t border-gray-200">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-4">
+                                <span className="text-xs text-gray-500">
+                                  Added {new Date(paper.savedAt).toLocaleDateString()}
+                                </span>
+                                <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                                  📚 {result.collectionName}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => handleEditPaper(paper, result.collectionId)}
+                                className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                              >
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Edit tags & notes
+                              </button>
+                            </div>
+                            
+                            {/* Tags */}
+                            {paper.tags && paper.tags.length > 0 && (
+                              <div className="mb-3">
+                                <div className="flex items-center mb-2">
+                                  <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                  </svg>
+                                  <span className="text-sm font-medium text-gray-700">Tags:</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {paper.tags.map((tag: string, tagIndex: number) => {
+                                    const isMatching = tag.toLowerCase().includes(globalSearchQuery.toLowerCase());
+                                    return (
+                                      <span
+                                        key={tagIndex}
+                                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                          isMatching 
+                                            ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' 
+                                            : 'bg-blue-100 text-blue-700'
+                                        }`}
+                                      >
+                                        {tag}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Notes */}
+                            {paper.notes && (
+                              <div>
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex items-center">
+                                    <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span className="text-sm font-medium text-gray-700">Notes:</span>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const noteId = `${result.collectionId}-${paper.doi || paper.title}`;
+                                      setExpandedNotes(prev => {
+                                        const newSet = new Set(prev);
+                                        if (newSet.has(noteId)) {
+                                          newSet.delete(noteId);
+                                        } else {
+                                          newSet.add(noteId);
+                                        }
+                                        return newSet;
+                                      });
+                                    }}
+                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                  >
+                                    {expandedNotes.has(`${result.collectionId}-${paper.doi || paper.title}`) ? 'Show less' : 'Show more'}
+                                  </button>
+                                </div>
+                                <div 
+                                  className={`text-sm text-gray-700 leading-relaxed notes-content ${
+                                    !expandedNotes.has(`${result.collectionId}-${paper.doi || paper.title}`) ? 'line-clamp-3' : ''
+                                  }`}
+                                  dangerouslySetInnerHTML={{ 
+                                    __html: paper.notes.replace(
+                                      new RegExp(`(${globalSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), 
+                                      '<mark class="bg-yellow-200 font-semibold">$1</mark>'
+                                    )
+                                  }}
+                                />
+                              </div>
+                            )}
+                            
+                            {!paper.tags?.length && !paper.notes && (
+                              <p className="text-sm text-gray-500 italic">No tags or notes yet</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : globalSearchQuery && searchResults.length === 0 ? (
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="text-center py-8">
+                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <p className="text-gray-500">No results found for "{globalSearchQuery}"</p>
+                  <p className="text-sm text-gray-400 mt-2">Try a different search term or search type</p>
+                </div>
+              </div>
+            ) : selectedCollectionData ? (
               <div>
                 <div className="bg-white rounded-lg shadow p-6 mb-6">
                   <div className="flex items-center space-x-3 mb-4">
@@ -591,29 +987,79 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                             </button>
                             <div className="ml-1 relative">
                               <button
-                                onClick={() => {/* Toggle folder menu */}}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowFolderMenu(showFolderMenu === folder.id ? null : folder.id);
+                                }}
                                 className="p-1 text-gray-400 hover:text-gray-600 rounded"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                 </svg>
                               </button>
-                              <div className="absolute right-0 top-6 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-10 hidden">
+                              {showFolderMenu === folder.id && (
+                                <div 
+                                  className="absolute right-0 top-6 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                 <div className="py-1">
                                   <button
-                                    onClick={() => handleEditFolder(folder)}
+                                    onClick={() => {
+                                      handleEditFolder(folder);
+                                      setShowFolderMenu(null);
+                                    }}
                                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   >
-                                    Edit
+                                    📝 Rename
+                                  </button>
+                                  
+                                  <div className="border-t border-gray-100 my-1"></div>
+                                  
+                                  <button
+                                    onClick={() => handleExportFolder(folder.id, 'apa')}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    📄 Export APA Citations
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteFolder(folder.id)}
+                                    onClick={() => handleExportFolder(folder.id, 'bibtex')}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    📚 Export BibTeX
+                                  </button>
+                                  <button
+                                    onClick={() => handleExportFolder(folder.id, 'summary')}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    📋 Export Summary
+                                  </button>
+                                  
+                                  <div className="border-t border-gray-100 my-1"></div>
+                                  
+                                  <button
+                                    onClick={() => {
+                                      handleOpenAIModal(selectedCollectionData.id, folder.id);
+                                      setShowFolderMenu(null);
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    🤖 Process with AI
+                                  </button>
+                                  
+                                  <div className="border-t border-gray-100 my-1"></div>
+                                  
+                                  <button
+                                    onClick={() => {
+                                      handleDeleteFolder(folder.id);
+                                      setShowFolderMenu(null);
+                                    }}
                                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                                   >
-                                    Delete
+                                    🗑️ Delete
                                   </button>
                                 </div>
-                              </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
@@ -626,7 +1072,7 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                 {(() => {
                   const papersToShow = selectedFolder 
                     ? getFolderPapers(selectedCollectionData.id, selectedFolder)
-                    : getFolderPapers(selectedCollectionData.id, undefined);
+                    : selectedCollectionData.papers; // Show ALL papers when no folder selected
                   
                   return papersToShow.length > 0 ? (
                     <div className="space-y-6">
@@ -711,7 +1157,10 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
                                   
                                   return (
                                     <div>
-                                      <p className="text-gray-700 leading-relaxed">{displayText}</p>
+                                      <div 
+                                        className="text-gray-700 leading-relaxed notes-content"
+                                        dangerouslySetInnerHTML={{ __html: displayText }}
+                                      />
                                       {paper.notes.length > 300 && (
                                         <button
                                           onClick={() => {
@@ -790,6 +1239,51 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
         isOpen={showAddExternalModal}
         onClose={() => setShowAddExternalModal(false)}
         onAddPaper={handleAddExternalPaper}
+      />
+
+      {/* AI Processing Modal - Using Enhanced Version */}
+      {showAIModal && aiProcessingTarget && (
+        <AIProcessingEnhanced
+          isOpen={showAIModal}
+          onClose={() => {
+            setShowAIModal(false);
+            setAIProcessingTarget(null);
+          }}
+          collectionId={aiProcessingTarget.collectionId}
+          collectionName={collections.find(c => c.id === aiProcessingTarget.collectionId)?.name || ''}
+          papers={
+            aiProcessingTarget.folderId
+              ? getFolderPapers(aiProcessingTarget.collectionId, aiProcessingTarget.folderId)
+              : collections.find(c => c.id === aiProcessingTarget.collectionId)?.papers || []
+          }
+          onComplete={() => {
+            loadCollections();
+            setShowAIModal(false);
+            setAIProcessingTarget(null);
+          }}
+        />
+      )}
+
+      {/* Share Collection Modal */}
+      {showShareModal && collectionToShare && (
+        <ShareCollectionModal
+          isOpen={showShareModal}
+          onClose={() => {
+            setShowShareModal(false);
+            setCollectionToShare(null);
+          }}
+          collection={collectionToShare}
+          onShare={handleShareCollection}
+        />
+      )}
+
+      {/* Backup & Recovery Modal */}
+      <CollectionBackupModal
+        isOpen={showBackupModal}
+        onClose={() => setShowBackupModal(false)}
+        onRestore={() => {
+          loadCollections();
+        }}
       />
 
       {/* Edit Tags and Notes Modal */}
@@ -924,6 +1418,7 @@ const CollectionsOverview: React.FC<CollectionsOverviewProps> = ({ onBackToSearc
         </div>
       )}
     </div>
+    </>
   );
 };
 

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OER Sources API Key Setup Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .configured { background: #d1fae5; color: #065f46; }
+        .not-configured { background: #fee2e2; color: #991b1b; }
+        h2 { color: #1f2937; }
+        code { background: #f3f4f6; padding: 2px 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>OER Sources API Key Configuration Status</h1>
+    
+    <h2>Frontend Configuration</h2>
+    <div class="status configured">
+        ✅ <strong>MIT OpenCourseWare</strong> - Added to API_KEY_CONFIGS with setup guide at <code>/mit-ocw-setup.html</code>
+    </div>
+    <div class="status configured">
+        ✅ <strong>MERLOT</strong> - Added to API_KEY_CONFIGS with API documentation link
+    </div>
+    <div class="status configured">
+        ✅ <strong>OER Commons</strong> - Added to API_KEY_CONFIGS with API documentation link
+    </div>
+    <div class="status configured">
+        ✅ <strong>CORE</strong> - Added to API_KEY_CONFIGS (was missing before)
+    </div>
+    
+    <h2>Backend Configuration</h2>
+    <div class="status configured">
+        ✅ All OER clients updated to accept API keys in constructor
+    </div>
+    <div class="status configured">
+        ✅ API key validation implemented (checks for empty/dummy keys)
+    </div>
+    <div class="status configured">
+        ✅ Search service updated to pass API keys to OER clients
+    </div>
+    
+    <h2>UI Behavior</h2>
+    <ul>
+        <li>Sources with <code>requiresApiKey: true</code> show three dots menu (⋮)</li>
+        <li>Clicking three dots opens API key configuration modal</li>
+        <li>Modal shows source description and "Get API key" link</li>
+        <li>After saving API key, three dots change to green shield (✓)</li>
+        <li>Sources without API keys are grayed out and disabled</li>
+    </ul>
+    
+    <h2>Sources Status Summary</h2>
+    <table border="1" cellpadding="10" style="margin-top: 20px; border-collapse: collapse;">
+        <tr>
+            <th>Source</th>
+            <th>Requires API Key</th>
+            <th>Without Key</th>
+            <th>With Key</th>
+        </tr>
+        <tr>
+            <td>Open Textbook Library</td>
+            <td>No</td>
+            <td>✅ Full access</td>
+            <td>N/A</td>
+        </tr>
+        <tr>
+            <td>LibreTexts</td>
+            <td>No</td>
+            <td>✅ Full access</td>
+            <td>N/A</td>
+        </tr>
+        <tr>
+            <td>MIT OpenCourseWare</td>
+            <td>Yes</td>
+            <td>🔒 Basic scraping (1-5 results)</td>
+            <td>✅ Full Google CSE search</td>
+        </tr>
+        <tr>
+            <td>MERLOT</td>
+            <td>Yes</td>
+            <td>🔒 No results</td>
+            <td>✅ API access</td>
+        </tr>
+        <tr>
+            <td>OER Commons</td>
+            <td>Yes</td>
+            <td>🔒 No results</td>
+            <td>✅ API access</td>
+        </tr>
+    </table>
+</body>
+</html>

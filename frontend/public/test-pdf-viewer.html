@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Viewer Test</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        .status { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .error { background: #fee; color: #c00; }
+        .success { background: #efe; color: #060; }
+    </style>
+</head>
+<body>
+    <h1>PDF Viewer Diagnostic</h1>
+    <div id="status"></div>
+    <button onclick="checkPDFViewer()">Check PDF Viewer</button>
+    <button onclick="clearScreenshotTool()">Clear Screenshot Tool</button>
+    
+    <script>
+        function addStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = 'status ' + (isError ? 'error' : 'success');
+            div.textContent = message;
+            status.appendChild(div);
+        }
+        
+        function checkPDFViewer() {
+            // Check for PDF viewer elements
+            const pdfViewer = document.querySelector('.rpv-core__viewer');
+            const pdfInner = document.querySelector('.rpv-core__inner-container');
+            const pdfPages = document.querySelector('.rpv-core__inner-pages');
+            const toolbar = document.querySelector('.rpv-toolbar');
+            const screenshotOverlay = document.querySelector('.pdf-screenshot-overlay');
+            
+            addStatus('PDF Viewer present: ' + !!pdfViewer);
+            addStatus('PDF Inner Container: ' + !!pdfInner);
+            addStatus('PDF Pages Container: ' + !!pdfPages);
+            addStatus('Toolbar present: ' + !!toolbar);
+            addStatus('Screenshot overlay active: ' + !!screenshotOverlay, !!screenshotOverlay);
+            
+            if (pdfViewer) {
+                const computed = window.getComputedStyle(pdfViewer);
+                addStatus('Viewer height: ' + computed.height);
+                addStatus('Viewer overflow: ' + computed.overflow);
+            }
+            
+            if (screenshotOverlay) {
+                const computed = window.getComputedStyle(screenshotOverlay);
+                addStatus('Screenshot overlay pointer-events: ' + computed.pointerEvents, true);
+                addStatus('Screenshot overlay z-index: ' + computed.zIndex, true);
+            }
+            
+            // Check for any elements blocking interaction
+            const elementsAtCenter = document.elementsFromPoint(window.innerWidth/2, window.innerHeight/2);
+            addStatus('Elements at center: ' + elementsAtCenter.map(el => el.className || el.tagName).join(', '));
+        }
+        
+        function clearScreenshotTool() {
+            const overlays = document.querySelectorAll('.pdf-screenshot-overlay');
+            overlays.forEach(el => el.remove());
+            addStatus('Removed ' + overlays.length + ' screenshot overlays');
+        }
+    </script>
+</body>
+</html>

@@ -2,8 +2,12 @@ from typing import List, Optional, Dict, Any
 import httpx
 from app.models import Paper, SearchRequest
 from .base import BaseAPIClient
+from app.utils.open_access_validator import open_access_validator
 import xml.etree.ElementTree as ET
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 class PubMedClient(BaseAPIClient):
     """Client for PubMed/MEDLINE API - NIH's premier database"""
@@ -182,7 +186,8 @@ class PubMedClient(BaseAPIClient):
                     for article_id in article.findall(".//ArticleId"):
                         if article_id.get("IdType") == "pmc":
                             pmc_id = article_id.text.replace("PMC", "")  # Remove PMC prefix if present
-                            full_text_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{pmc_id}/"
+                            # Use Europe PMC direct PDF download URL (returns PDF with filename in headers)
+                            full_text_url = f"https://europepmc.org/backend/ptpmcrender.fcgi?accid=PMC{pmc_id}&blobtype=pdf"
                             break
                     
                     # If no PMC ID (no guaranteed full-text), skip this paper
@@ -194,19 +199,32 @@ class PubMedClient(BaseAPIClient):
                     if doi or pmid:
                         citation_count = await self._get_citation_count(doi, pmid)
                     
-                    paper = Paper(
+                    # Validate open access status before including paper
+                    is_oa, reason = await open_access_validator.validate_paper(
                         title=title,
-                        authors=authors if authors else ["Unknown"],
-                        abstract=abstract if abstract else "No abstract available",
-                        year=year,
-                        source="PubMed",
-                        full_text_url=full_text_url,
-                        doi=doi,
                         journal=journal,
-                        citation_count=citation_count
+                        doi=doi,
+                        abstract=abstract,
+                        full_text_url=full_text_url,
+                        check_url_accessibility=False  # Skip URL check for performance
                     )
                     
-                    papers.append(paper)
+                    if is_oa:
+                        paper = Paper(
+                            title=title,
+                            authors=authors if authors else ["Unknown"],
+                            abstract=abstract if abstract else "No abstract available",
+                            year=year,
+                            source="PubMed",
+                            full_text_url=full_text_url,
+                            doi=doi,
+                            journal=journal,
+                            citation_count=citation_count
+                        )
+                        papers.append(paper)
+                        logger.debug(f"PubMed paper accepted: {title[:50]}... ({reason})")
+                    else:
+                        logger.debug(f"PubMed paper rejected: {title[:50]}... ({reason})")
                     
                 except Exception as e:
                     print(f"Error parsing PubMed article: {str(e)}")

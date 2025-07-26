@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exact Frontend Test</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>Test Exact Frontend Auth</h1>
+    
+    <form id="registerForm">
+        <h2>Register</h2>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+        <input type="text" id="full_name" placeholder="Full Name">
+        <input type="text" id="institution" placeholder="Institution">
+        <button type="submit">Register</button>
+    </form>
+    
+    <div id="status"></div>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const status = document.getElementById('status');
+            const result = document.getElementById('result');
+            
+            const formData = {
+                email: document.getElementById('email').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                confirmPassword: document.getElementById('confirmPassword').value,
+                full_name: document.getElementById('full_name').value,
+                institution: document.getElementById('institution').value
+            };
+            
+            // Validation like the React app does
+            if (formData.password !== formData.confirmPassword) {
+                result.innerHTML = '❌ Passwords do not match';
+                return;
+            }
+            if (formData.password.length < 8) {
+                result.innerHTML = '❌ Password must be at least 8 characters';
+                return;
+            }
+            if (!formData.username.trim()) {
+                result.innerHTML = '❌ Username is required';
+                return;
+            }
+            if (!formData.email.trim()) {
+                result.innerHTML = '❌ Email is required';
+                return;
+            }
+            
+            status.innerHTML = '⏳ Registering...';
+            result.innerHTML = '';
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: formData.email,
+                        username: formData.username,
+                        password: formData.password,
+                        full_name: formData.full_name,
+                        institution: formData.institution
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorData}`);
+                }
+                
+                const data = await response.json();
+                
+                status.innerHTML = '✅ Registration successful!';
+                result.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                // Test immediate login
+                setTimeout(async () => {
+                    status.innerHTML = '⏳ Testing login...';
+                    
+                    try {
+                        const loginResponse = await fetch('http://127.0.0.1:8000/api/auth/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                email_or_username: formData.username,
+                                password: formData.password
+                            })
+                        });
+                        
+                        if (!loginResponse.ok) {
+                            throw new Error(`Login failed: ${loginResponse.status}`);
+                        }
+                        
+                        const loginData = await loginResponse.json();
+                        status.innerHTML = '✅ Login also successful!';
+                        result.innerHTML += `<h3>Login Data:</h3><pre>${JSON.stringify(loginData, null, 2)}</pre>`;
+                        
+                    } catch (loginError) {
+                        status.innerHTML = '❌ Login failed!';
+                        result.innerHTML += `<h3>Login Error:</h3><pre>${loginError.message}</pre>`;
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                status.innerHTML = '❌ Registration failed!';
+                result.innerHTML = `<pre>Error: ${error.message}</pre>`;
+                console.error('Registration error:', error);
+            }
+        });
+        
+        // Pre-fill with test data
+        document.getElementById('email').value = 'htmltest@example.com';
+        document.getElementById('username').value = 'htmluser';
+        document.getElementById('password').value = 'HTMLPass123';
+        document.getElementById('confirmPassword').value = 'HTMLPass123';
+        document.getElementById('full_name').value = 'HTML Test User';
+    </script>
+</body>
+</html>

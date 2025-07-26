@@ -56,7 +56,7 @@ class COREClient(BaseAPIClient):
             
             if "results" in data:
                 for result in data["results"]:
-                    paper = self.normalize_paper(result)
+                    paper = await self.normalize_paper(result)
                     if paper:
                         papers.append(paper)
             
@@ -66,7 +66,7 @@ class COREClient(BaseAPIClient):
             logger.error(f"Error searching CORE: {e}")
             return []
     
-    def normalize_paper(self, raw_paper: Dict[str, Any]) -> Optional[Paper]:
+    async def normalize_paper(self, raw_paper: Dict[str, Any]) -> Optional[Paper]:
         """Normalize CORE response to Paper model - only return papers with full PDFs"""
         try:
             # Only include papers with downloadable PDFs
@@ -86,16 +86,24 @@ class COREClient(BaseAPIClient):
             if not abstract and raw_paper.get("description"):
                 abstract = raw_paper["description"]
             
-            return Paper(
+            paper = Paper(
                 title=raw_paper.get("title", "").strip(),
                 authors=authors,
                 abstract=abstract.strip(),
-                year=str(raw_paper.get("yearPublished", "")),
+                year=str(raw_paper.get("yearPublished", "Unknown")) if raw_paper.get("yearPublished") else "Unknown",
                 source="CORE",
                 full_text_url=full_text_url,
                 doi=raw_paper.get("doi"),
                 journal=raw_paper.get("publisher", "")
             )
+            
+            # Validate open access
+            is_oa, reason = await self.validate_open_access(paper)
+            if is_oa:
+                return paper
+            else:
+                logger.debug(f"CORE paper rejected - {reason}: {paper.title[:50]}...")
+                return None
         except Exception as e:
             logger.error(f"Error normalizing CORE paper: {e}")
             return None

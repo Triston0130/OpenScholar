@@ -61,8 +61,8 @@ const SavedCollection: React.FC<SavedCollectionProps> = ({ onBackToSearch }) => 
     setEditTags(editTags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleAddExternalPaper = (paper: Paper) => {
-    addPaperToCollection(paper, 'default');
+  const handleAddExternalPaper = (paper: Paper, pdfFile?: File) => {
+    addPaperToCollection(paper, 'default', [], '', undefined, pdfFile);
     loadSavedPapers();
   };
 

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenScholar Connection Test</title>
+</head>
+<body>
+    <h1>OpenScholar Connection Test</h1>
+    <button onclick="testConnection()">Test Backend Connection</button>
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Test health endpoint
+                const healthResponse = await fetch('http://localhost:8001/health');
+                const healthData = await healthResponse.json();
+                
+                // Test search endpoint
+                const searchResponse = await fetch('http://localhost:8001/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: 'test',
+                        page: 1,
+                        per_page: 10,
+                        require_authors: true
+                    })
+                });
+                
+                const searchData = await searchResponse.json();
+                
+                resultDiv.innerHTML = `
+                    <h2>Connection Successful!</h2>
+                    <h3>Health Status:</h3>
+                    <pre>${JSON.stringify(healthData, null, 2)}</pre>
+                    <h3>Search Response:</h3>
+                    <pre>${JSON.stringify(searchData, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<h2>Connection Failed!</h2><p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -5,7 +5,7 @@ import { fetchExternalPaper } from '../utils/api';
 interface AddExternalPaperModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddPaper: (paper: Paper) => void;
+  onAddPaper: (paper: Paper, pdfFile?: File) => void;
 }
 
 const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
@@ -13,9 +13,11 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
   onClose,
   onAddPaper
 }) => {
-  const [activeTab, setActiveTab] = useState<'doi' | 'bibtex'>('doi');
+  const [activeTab, setActiveTab] = useState<'doi' | 'isbn' | 'bibtex' | 'pdf'>('doi');
   const [doiInput, setDoiInput] = useState('');
+  const [isbnInput, setIsbnInput] = useState('');
   const [bibtexInput, setBibtexInput] = useState('');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewPaper, setPreviewPaper] = useState<Paper | null>(null);
@@ -26,6 +28,41 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
     
     // Call backend API through utility function
     return await fetchExternalPaper(cleanDOI);
+  };
+
+  const fetchBookFromISBN = async (isbn: string): Promise<Paper> => {
+    // Clean up ISBN (remove dashes, spaces)
+    const cleanISBN = isbn.replace(/[-\s]/g, '').trim();
+    
+    // Validate ISBN (10 or 13 digits)
+    if (!/^\d{10}$|^\d{13}$/.test(cleanISBN)) {
+      throw new Error('Invalid ISBN format. Please enter a 10 or 13 digit ISBN.');
+    }
+    
+    // Call backend API for ISBN lookup
+    const response = await fetch(`/api/external/isbn/${cleanISBN}`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to fetch book information');
+    }
+    
+    const bookData = await response.json();
+    
+    // Convert book data to Paper format
+    return {
+      title: bookData.title || 'Unknown Title',
+      authors: bookData.authors || ['Unknown Author'],
+      year: bookData.publishedDate?.substring(0, 4) || new Date().getFullYear().toString(),
+      journal: bookData.publisher || 'Book',
+      abstract: bookData.description || 'No description available',
+      doi: '',
+      full_text_url: bookData.previewLink || '',
+      source: 'External (ISBN)',
+      isbn: cleanISBN,
+      pageCount: bookData.pageCount,
+      categories: bookData.categories,
+      thumbnail: bookData.thumbnail
+    } as Paper;
   };
 
   const parseBibTeX = (bibtexText: string): Paper[] => {
@@ -89,7 +126,7 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
         year: paper.year || 'Unknown',
         journal: paper.journal || 'Unknown Journal',
         doi: paper.doi || undefined,
-        full_text_url: paper.full_text_url || undefined,
+        full_text_url: paper.full_text_url || '',
         source: 'External (BibTeX)',
         citation_count: undefined,
         influential_citation_count: undefined
@@ -112,6 +149,22 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
       setPreviewPaper(paper);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch paper');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleISBNSubmit = async () => {
+    if (!isbnInput.trim()) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const book = await fetchBookFromISBN(isbnInput);
+      setPreviewPaper(book);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch book information');
     } finally {
       setIsLoading(false);
     }
@@ -141,18 +194,99 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
 
   const handleAddPaper = () => {
     if (previewPaper) {
-      onAddPaper(previewPaper);
+      onAddPaper(previewPaper, pdfFile || undefined);
       handleClose();
+    }
+  };
+
+  const handlePdfOnlyUpload = async () => {
+    if (!pdfFile) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Try to extract DOI from filename
+      const filename = pdfFile.name;
+      const doiPattern = /10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+/;
+      const doiMatch = filename.match(doiPattern);
+      
+      let paper: Paper;
+      
+      if (doiMatch) {
+        // Found a DOI in the filename, try to fetch metadata
+        const extractedDoi = doiMatch[0];
+        try {
+          const fetchedPaper = await fetchPaperFromDOI(extractedDoi);
+          paper = {
+            ...fetchedPaper,
+            source: 'External'
+          };
+          // Show preview with fetched metadata
+          setPreviewPaper(paper);
+        } catch (error) {
+          console.error('Failed to fetch metadata for DOI:', error);
+          // Fall back to creating paper with filename
+          paper = {
+            title: filename.replace(/\.pdf$/i, '').replace(doiPattern, '').trim() || 'Untitled',
+            authors: ['Unknown'],
+            year: new Date().getFullYear().toString(),
+            journal: 'External (PDF Upload)',
+            abstract: 'PDF uploaded directly. DOI found but metadata fetch failed.',
+            full_text_url: '', // Will be set after upload
+            doi: extractedDoi,
+            source: 'External'
+          };
+          setPreviewPaper(paper);
+        }
+      } else {
+        // No DOI found, create paper with filename
+        paper = {
+          title: filename.replace(/\.pdf$/i, '').trim() || 'Untitled',
+          authors: ['Unknown'],
+          year: new Date().getFullYear().toString(),
+          journal: 'External (PDF Upload)',
+          abstract: 'PDF uploaded directly. Metadata extraction pending.',
+          full_text_url: '', // Will be set after upload
+          doi: '',
+          source: 'External'
+        };
+        setPreviewPaper(paper);
+      }
+      
+      // Auto-add after preview if no DOI, otherwise let user confirm
+      if (!doiMatch) {
+        setTimeout(() => {
+          onAddPaper(paper, pdfFile);
+          handleClose();
+        }, 1000);
+      }
+    } catch (err) {
+      setError('Failed to process PDF');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleClose = () => {
     setDoiInput('');
+    setIsbnInput('');
     setBibtexInput('');
+    setPdfFile(null);
     setPreviewPaper(null);
     setError(null);
     setIsLoading(false);
     onClose();
+  };
+
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file);
+      setError(null);
+    } else {
+      setError('Please select a valid PDF file');
+    }
   };
 
   if (!isOpen) return null;
@@ -188,6 +322,16 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
             Add by DOI
           </button>
           <button
+            onClick={() => setActiveTab('isbn')}
+            className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'isbn'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Add by ISBN
+          </button>
+          <button
             onClick={() => setActiveTab('bibtex')}
             className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'bibtex'
@@ -196,6 +340,16 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
             }`}
           >
             Upload BibTeX
+          </button>
+          <button
+            onClick={() => setActiveTab('pdf')}
+            className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'pdf'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Upload PDF
           </button>
         </div>
 
@@ -223,6 +377,94 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
               >
                 {isLoading ? 'Fetching...' : 'Fetch Paper'}
               </button>
+              
+              {/* Optional PDF Upload for DOI */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Have the PDF? (Optional)
+                </label>
+                <div className="mt-1 flex items-center">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handlePdfChange}
+                    className="hidden"
+                    id="doi-pdf-upload"
+                  />
+                  <label
+                    htmlFor="doi-pdf-upload"
+                    className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg className="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    {pdfFile ? pdfFile.name : 'Choose PDF file'}
+                  </label>
+                </div>
+                {pdfFile && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    PDF will be stored with the paper metadata
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'isbn' && (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="isbn" className="block text-sm font-medium text-gray-700 mb-2">
+                  ISBN Number
+                </label>
+                <input
+                  id="isbn"
+                  type="text"
+                  value={isbnInput}
+                  onChange={(e) => setIsbnInput(e.target.value)}
+                  placeholder="978-3-16-148410-0 or 0-7167-0344-0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Enter ISBN-10 or ISBN-13 with or without dashes
+                </p>
+              </div>
+              <button
+                onClick={handleISBNSubmit}
+                disabled={isLoading || !isbnInput.trim()}
+                className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? 'Looking up book...' : 'Find Book'}
+              </button>
+              
+              {/* Optional PDF Upload for ISBN */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Have the PDF? (Optional)
+                </label>
+                <div className="mt-1 flex items-center">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handlePdfChange}
+                    className="hidden"
+                    id="isbn-pdf-upload"
+                  />
+                  <label
+                    htmlFor="isbn-pdf-upload"
+                    className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg className="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    {pdfFile ? pdfFile.name : 'Choose PDF file'}
+                  </label>
+                </div>
+                {pdfFile && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    PDF will be stored with the book metadata
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -253,6 +495,107 @@ const AddExternalPaperModal: React.FC<AddExternalPaperModalProps> = ({
                 className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? 'Parsing...' : 'Parse BibTeX'}
+              </button>
+              
+              {/* Optional PDF Upload for BibTeX */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Have the PDF? (Optional)
+                </label>
+                <div className="mt-1 flex items-center">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handlePdfChange}
+                    className="hidden"
+                    id="bibtex-pdf-upload"
+                  />
+                  <label
+                    htmlFor="bibtex-pdf-upload"
+                    className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg className="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    {pdfFile ? pdfFile.name : 'Choose PDF file'}
+                  </label>
+                </div>
+                {pdfFile && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    PDF will be stored with the paper metadata
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* PDF Upload Tab */}
+          {activeTab === 'pdf' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload PDF File
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                  <div className="space-y-1 text-center">
+                    <svg
+                      className="mx-auto h-12 w-12 text-gray-400"
+                      stroke="currentColor"
+                      fill="none"
+                      viewBox="0 0 48 48"
+                    >
+                      <path
+                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <div className="flex text-sm text-gray-600">
+                      <label
+                        htmlFor="pdf-file-upload"
+                        className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                      >
+                        <span>Upload a PDF</span>
+                        <input
+                          id="pdf-file-upload"
+                          name="pdf-file-upload"
+                          type="file"
+                          accept="application/pdf"
+                          className="sr-only"
+                          onChange={handlePdfChange}
+                        />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-gray-500">PDF up to 50MB</p>
+                  </div>
+                </div>
+              </div>
+              
+              {pdfFile && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-md">
+                  <p className="text-sm font-medium text-gray-900">Selected file:</p>
+                  <p className="text-sm text-gray-600 mt-1">{pdfFile.name}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    ({(pdfFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                </div>
+              )}
+              
+              <div className="p-4 bg-blue-50 rounded-md">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> We'll try to extract metadata from the PDF (title, authors, etc.) 
+                  or you can manually enter the information after upload.
+                </p>
+              </div>
+              
+              <button
+                onClick={handlePdfOnlyUpload}
+                disabled={isLoading || !pdfFile}
+                className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? 'Processing...' : 'Upload PDF'}
               </button>
             </div>
           )}

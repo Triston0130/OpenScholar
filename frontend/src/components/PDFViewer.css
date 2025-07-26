@@ -1,0 +1,41 @@
+/* Ensure text selection works in PDF viewer */
+.react-pdf__Page {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+.react-pdf__Page__textContent {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+.react-pdf__Page__textContent span {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Ensure annotation layer doesn't block selection */
+.react-pdf__Page__annotations {
+  pointer-events: none;
+}
+
+.react-pdf__Page__annotations .annotationLayer > * {
+  pointer-events: auto;
+}
+
+/* Highlight selected text */
+::selection {
+  background-color: #b3d9ff;
+  color: #000;
+}
+
+::-moz-selection {
+  background-color: #b3d9ff;
+  color: #000;
+}

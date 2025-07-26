@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Collection, getCollections, createCollection, isPaperInCollection, getAllTags } from '../utils/collections';
+import { Collection, getCollections, createCollection, isPaperInCollection, getAllTags, getFolders, getAllCollectionsWithPapers } from '../utils/collections';
 import { Paper } from '../types';
 import CreateCollectionModal from './CreateCollectionModal';
-import FolderSelector from './FolderSelector';
 
 interface CollectionSelectorProps {
   isOpen: boolean;
@@ -32,7 +31,6 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
   const [notes, setNotes] = useState('');
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
-  const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -55,19 +53,51 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
     setCollections(getCollections());
   };
 
-  const handleCreateCollection = (name: string, description?: string, color?: string) => {
-    const newCollection = createCollection(name, description, color);
+  // Helper function to find existing tags and notes for a paper across all collections
+  const findExistingMetadata = () => {
+    const allCollections = getAllCollectionsWithPapers();
+    let existingTags: string[] = [];
+    let existingNotes: string = '';
+    
+    allCollections.forEach(collection => {
+      const existingPaper = collection.papers.find(p => 
+        (paper.doi && p.doi === paper.doi) || p.title === paper.title
+      );
+      
+      if (existingPaper) {
+        // Merge tags (avoiding duplicates)
+        if (existingPaper.tags && existingPaper.tags.length > 0) {
+          existingTags = Array.from(new Set([...existingTags, ...existingPaper.tags]));
+        }
+        
+        // Use the longest/most detailed notes
+        if (existingPaper.notes && existingPaper.notes.length > existingNotes.length) {
+          existingNotes = existingPaper.notes;
+        }
+      }
+    });
+    return { tags: existingTags, notes: existingNotes };
+  };
+
+  const handleCreateCollection = async (name: string, description?: string, color?: string) => {
+    const newCollection = await createCollection(name, description, color);
     loadCollections();
-    // Automatically add paper to new collection with empty tags and notes
-    onSaveToCollection(newCollection.id, [], '', undefined);
+    
+    // Automatically add paper to new collection with existing tags and notes if available
+    const existing = findExistingMetadata();
+    onSaveToCollection(newCollection.id, existing.tags, existing.notes, undefined);
   };
 
   const handleToggleCollection = (collectionId: string) => {
     if (bulkMode || !isPaperInCollection(paper, collectionId)) {
       // Show tags and notes dialog for new saves (always for bulk mode)
       setSelectedCollectionId(collectionId);
-      setTags([]);
-      setNotes('');
+      
+      // Load existing tags and notes from other collections
+      const existing = findExistingMetadata();
+      setTags(existing.tags);
+      setNotes(existing.notes);
+      
       setSelectedFolderId(undefined);
       setShowTagsNotesDialog(true);
     } else {
@@ -105,7 +135,7 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
         <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
@@ -333,16 +363,18 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Folder (Optional)
                 </label>
-                <button
-                  onClick={() => setShowFolderSelector(true)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-left hover:bg-gray-50 transition-colors"
+                <select
+                  value={selectedFolderId || ''}
+                  onChange={(e) => setSelectedFolderId(e.target.value || undefined)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
                 >
-                  {selectedFolderId ? (
-                    <span className="text-gray-900">📁 Selected folder</span>
-                  ) : (
-                    <span className="text-gray-500">Select folder (optional)</span>
-                  )}
-                </button>
+                  <option value="">No folder</option>
+                  {selectedCollectionId && getFolders(selectedCollectionId).map((folder) => (
+                    <option key={folder.id} value={folder.id}>
+                      📁 {folder.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Notes Section */}
@@ -380,14 +412,6 @@ const CollectionSelector: React.FC<CollectionSelectorProps> = ({
         </div>
       )}
 
-      {/* Folder Selector Modal */}
-      <FolderSelector
-        isOpen={showFolderSelector}
-        onClose={() => setShowFolderSelector(false)}
-        collectionId={selectedCollectionId}
-        selectedFolderId={selectedFolderId}
-        onSelectFolder={(folderId) => setSelectedFolderId(folderId)}
-      />
     </>
   );
 };

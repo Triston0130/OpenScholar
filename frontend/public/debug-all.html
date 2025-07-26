@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complete Debug</title>
+    <style>
+        .test { margin: 10px; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .pending { background: #fff3cd; }
+    </style>
+</head>
+<body>
+    <h1>Frontend-Backend Communication Debug</h1>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:8001';
+        const results = document.getElementById('results');
+        
+        async function testEndpoint(name, url, options = {}) {
+            const div = document.createElement('div');
+            div.className = 'test pending';
+            div.innerHTML = `<strong>${name}</strong>: Testing...`;
+            results.appendChild(div);
+            
+            try {
+                const start = Date.now();
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                const time = Date.now() - start;
+                
+                let body = '';
+                try {
+                    body = await response.text();
+                    if (body) {
+                        JSON.parse(body); // Test if it's valid JSON
+                    }
+                } catch (e) {
+                    body = 'Invalid response format';
+                }
+                
+                div.className = response.ok ? 'test success' : 'test error';
+                div.innerHTML = `
+                    <strong>${name}</strong><br>
+                    Status: ${response.status} ${response.statusText}<br>
+                    Time: ${time}ms<br>
+                    Response: <pre>${body.substring(0, 200)}${body.length > 200 ? '...' : ''}</pre>
+                `;
+            } catch (error) {
+                div.className = 'test error';
+                div.innerHTML = `
+                    <strong>${name}</strong><br>
+                    ERROR: ${error.message}<br>
+                    This usually means the backend is not responding at all.
+                `;
+            }
+        }
+        
+        async function runAllTests() {
+            results.innerHTML = '<h2>Testing all endpoints...</h2>';
+            
+            // Test basic connectivity
+            await testEndpoint('Root endpoint', `${API_URL}/`);
+            await testEndpoint('Health check', `${API_URL}/health`);
+            
+            // Test auth endpoints
+            await testEndpoint('Auth check (GET)', `${API_URL}/api/auth/me`);
+            await testEndpoint('Login (POST)', `${API_URL}/api/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    email_or_username: 'test@test.com',
+                    password: 'testpassword'
+                })
+            });
+            
+            // Test search endpoint
+            await testEndpoint('Search (POST)', `${API_URL}/api/search`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    query: 'test',
+                    limit: 5,
+                    page: 1,
+                    per_page: 20
+                })
+            });
+            
+            // Test if CORS headers are present
+            const corsDiv = document.createElement('div');
+            corsDiv.className = 'test';
+            corsDiv.innerHTML = '<strong>CORS Test</strong><br>';
+            
+            try {
+                const response = await fetch(`${API_URL}/health`, {
+                    headers: {
+                        'Origin': window.location.origin
+                    }
+                });
+                const corsHeader = response.headers.get('access-control-allow-origin');
+                corsDiv.innerHTML += `CORS Header: ${corsHeader || 'NOT SET'}<br>`;
+                corsDiv.innerHTML += `Frontend Origin: ${window.location.origin}`;
+                corsDiv.className = corsHeader ? 'test success' : 'test error';
+            } catch (e) {
+                corsDiv.innerHTML += `CORS test failed: ${e.message}`;
+                corsDiv.className = 'test error';
+            }
+            results.appendChild(corsDiv);
+            
+            // Show environment info
+            const envDiv = document.createElement('div');
+            envDiv.className = 'test';
+            envDiv.innerHTML = `
+                <strong>Environment</strong><br>
+                Current URL: ${window.location.href}<br>
+                API URL: ${API_URL}<br>
+                REACT_APP_API_URL: ${process.env.REACT_APP_API_URL || 'Not available in plain HTML'}
+            `;
+            results.appendChild(envDiv);
+        }
+        
+        // Run tests automatically
+        runAllTests();
+    </script>
+</body>
+</html>

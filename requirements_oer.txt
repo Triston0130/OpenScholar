@@ -1,0 +1,9 @@
+# Additional requirements for OER sources
+# Install with: pip install -r requirements_oer.txt
+
+# For HTML parsing in DOAB and full LibreTexts support
+beautifulsoup4>=4.9.0
+
+# These should already be installed from main requirements.txt:
+# httpx
+# asyncio

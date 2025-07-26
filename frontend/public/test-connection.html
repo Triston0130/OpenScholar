@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Connection</title>
+</head>
+<body>
+    <h1>Testing Frontend-Backend Connection</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function test() {
+            // Check what API URL the frontend would use
+            const apiUrl = 'http://localhost:8001';
+            
+            results.innerHTML += `<h2>Testing connection to ${apiUrl}</h2>`;
+            
+            // Test health endpoint
+            try {
+                const healthResponse = await fetch(`${apiUrl}/health`);
+                const healthData = await healthResponse.text();
+                results.innerHTML += `<p>Health check: ${healthResponse.status} - ${healthData}</p>`;
+            } catch (e) {
+                results.innerHTML += `<p style="color:red">Health check failed: ${e.message}</p>`;
+            }
+            
+            // Test auth endpoint
+            try {
+                const authResponse = await fetch(`${apiUrl}/api/auth/me`);
+                results.innerHTML += `<p>Auth endpoint: ${authResponse.status}</p>`;
+            } catch (e) {
+                results.innerHTML += `<p style="color:red">Auth check failed: ${e.message}</p>`;
+            }
+            
+            // Test search endpoint
+            try {
+                const searchResponse = await fetch(`${apiUrl}/api/search`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: 'test', limit: 5 })
+                });
+                
+                // Set a timeout for the response
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timed out after 5 seconds')), 5000)
+                );
+                
+                const responseData = await Promise.race([
+                    searchResponse.text(),
+                    timeoutPromise
+                ]);
+                
+                results.innerHTML += `<p>Search endpoint: ${searchResponse.status} - Response length: ${responseData.length} bytes</p>`;
+            } catch (e) {
+                results.innerHTML += `<p style="color:red">Search endpoint failed: ${e.message}</p>`;
+            }
+            
+            // Check if backend is the issue
+            results.innerHTML += '<h3>Direct Backend Tests:</h3>';
+            
+            // Test if port 8001 is actually open
+            try {
+                const socket = new WebSocket('ws://localhost:8001');
+                socket.onerror = () => {
+                    results.innerHTML += '<p style="color:red">Port 8001 seems to be open but not responding to HTTP</p>';
+                };
+                socket.onopen = () => {
+                    results.innerHTML += '<p style="color:green">Port 8001 is open</p>';
+                    socket.close();
+                };
+            } catch (e) {
+                results.innerHTML += `<p style="color:red">Port 8001 connection error: ${e.message}</p>`;
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Screenshot Debug</title>
+    <style>
+        body { margin: 20px; font-family: Arial, sans-serif; }
+        .debug { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .error { background: #fee; color: #c00; }
+        .success { background: #efe; color: #060; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>PDF Screenshot Debug</h1>
+    <div id="output"></div>
+    
+    <button onclick="analyzePDFStructure()">Analyze PDF Structure</button>
+    <button onclick="testScreenshotArea()">Test Screenshot Area</button>
+    <button onclick="listCanvases()">List All Canvases</button>
+    
+    <script>
+        function log(message, type = 'debug') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `debug ${type}`;
+            div.textContent = message;
+            output.appendChild(div);
+        }
+        
+        function analyzePDFStructure() {
+            log('=== Analyzing PDF Viewer Structure ===');
+            
+            // Check for react-pdf-viewer elements
+            const elements = {
+                'PDF Container': '.pdf-viewer-wrapper',
+                'Inner Container': '.rpv-core__inner-container',
+                'Canvas Layer': '.rpv-core__canvas-layer',
+                'Page Layer': '.rpv-core__page-layer',
+                'Text Layer': '.rpv-core__text-layer',
+                'Annotation Layer': '.rpv-core__annotation-layer',
+                'Pages Container': '.rpv-core__inner-pages',
+                'Canvas Elements': '.rpv-core__canvas-layer canvas'
+            };
+            
+            for (const [name, selector] of Object.entries(elements)) {
+                const el = document.querySelector(selector);
+                if (el) {
+                    const rect = el.getBoundingClientRect();
+                    log(`✓ ${name}: ${selector}`, 'success');
+                    log(`  Position: ${rect.left.toFixed(0)},${rect.top.toFixed(0)} Size: ${rect.width.toFixed(0)}x${rect.height.toFixed(0)}`);
+                    
+                    if (name === 'Canvas Elements') {
+                        const canvases = document.querySelectorAll(selector);
+                        log(`  Found ${canvases.length} canvas elements`);
+                    }
+                } else {
+                    log(`✗ ${name}: ${selector} not found`, 'error');
+                }
+            }
+        }
+        
+        function testScreenshotArea() {
+            const pdfContainer = document.querySelector('.pdf-viewer-wrapper');
+            if (!pdfContainer) {
+                log('PDF container not found!', 'error');
+                return;
+            }
+            
+            // Create a test overlay to show the capture area
+            const overlay = document.createElement('div');
+            overlay.style.position = 'absolute';
+            overlay.style.border = '2px solid red';
+            overlay.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.zIndex = '9999';
+            overlay.style.width = '200px';
+            overlay.style.height = '100px';
+            overlay.style.left = '100px';
+            overlay.style.top = '100px';
+            
+            pdfContainer.style.position = 'relative';
+            pdfContainer.appendChild(overlay);
+            
+            log('Added red test overlay at 100,100 (200x100)', 'success');
+            log('This shows where a screenshot would be captured');
+            
+            setTimeout(() => {
+                overlay.remove();
+                log('Test overlay removed');
+            }, 3000);
+        }
+        
+        function listCanvases() {
+            const canvases = document.querySelectorAll('canvas');
+            log(`=== Found ${canvases.length} canvas elements ===`);
+            
+            canvases.forEach((canvas, index) => {
+                const rect = canvas.getBoundingClientRect();
+                const parent = canvas.parentElement;
+                log(`Canvas ${index + 1}:`);
+                log(`  Size: ${canvas.width}x${canvas.height} (internal)`);
+                log(`  Display: ${rect.width.toFixed(0)}x${rect.height.toFixed(0)} (on screen)`);
+                log(`  Position: ${rect.left.toFixed(0)},${rect.top.toFixed(0)}`);
+                log(`  Parent: ${parent?.className || 'no class'}`);
+                log(`  Has content: ${canvas.width > 0 && canvas.height > 0 ? 'Yes' : 'No'}`);
+            });
+        }
+    </script>
+</body>
+</html>

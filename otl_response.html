@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html class='h-100' lang='en' prefix='og: http://ogp.me/ns#'>
+<head>
+<script nonce="55125e76a4491987d2764e6421e975b9">
+//<![CDATA[
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;var n=d.querySelector('[nonce]');n&&j.setAttribute('nonce',n.nonce||n.getAttribute('nonce'));f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KVLSPNJ');
+
+//]]>
+</script>
+
+<script type="text/javascript" nonce="55125e76a4491987d2764e6421e975b9">window.NREUM||(NREUM={});NREUM.info={"beacon":"bam.nr-data.net","errorBeacon":"bam.nr-data.net","licenseKey":"870b502a95","applicationID":"175895155","transactionName":"JlcNEUJcXg9UShZYUAdKAhdJHEYGSUxbW1YOS0wMXldXGw==","queueTime":0,"applicationTime":168,"agent":""}</script>
+<script type="text/javascript" nonce="55125e76a4491987d2764e6421e975b9">(window.NREUM||(NREUM={})).init={ajax:{deny_list:["bam.nr-data.net"]}};(window.NREUM||(NREUM={})).loader_config={licenseKey:"870b502a95",applicationID:"175895155"};;/*! For license information please see nr-loader-rum-1.293.0.min.js.LICENSE.txt */
+(()=>{var e,t,r={122:(e,t,r)=>{"use strict";r.d(t,{a:()=>i});var n=r(944);function i(e,t){try{if(!e||"object"!=typeof e)return(0,n.R)(3);if(!t||"object"!=typeof t)return(0,n.R)(4);const r=Object.create(Object.getPrototypeOf(t),Object.getOwnPropertyDescriptors(t)),a=0===Object.keys(r).length?e:r;for(let o in a)if(void 0!==e[o])try{if(null===e[o]){r[o]=null;continue}Array.isArray(e[o])&&Array.isArray(t[o])?r[o]=Array.from(new Set([...e[o],...t[o]])):"object"==typeof e[o]&&"object"==typeof t[o]?r[o]=i(e[o],t[o]):r[o]=e[o]}catch(e){r[o]||(0,n.R)(1,e)}return r}catch(e){(0,n.R)(2,e)}}},555:(e,t,r)=>{"use strict";r.d(t,{D:()=>s,f:()=>o});var n=r(384),i=r(122);const a={beacon:n.NT.beacon,errorBeacon:n.NT.errorBeacon,licenseKey:void 0,applicationID:void 0,sa:void 0,queueTime:void 0,applicationTime:void 0,ttGuid:void 0,user:void 0,account:void 0,product:void 0,extra:void 0,jsAttributes:{},userAttributes:void 0,atts:void 0,transactionName:void 0,tNamePlain:void 0};function o(e){try{return!!e.licenseKey&&!!e.errorBeacon&&!!e.applicationID}catch(e){return!1}}const s=e=>(0,i.a)(e,a)},324:(e,t,r)=>{"use strict";r.d(t,{F3:()=>i,Xs:()=>a,xv:()=>n});const n="1.293.0",i="PROD",a="CDN"},154:(e,t,r)=>{"use strict";r.d(t,{OF:()=>c,RI:()=>i,WN:()=>d,bv:()=>a,gm:()=>o,mw:()=>s,sb:()=>u});var n=r(863);const i="undefined"!=typeof window&&!!window.document,a="undefined"!=typeof WorkerGlobalScope&&("undefined"!=typeof self&&self instanceof WorkerGlobalScope&&self.navigator instanceof WorkerNavigator||"undefined"!=typeof globalThis&&globalThis instanceof WorkerGlobalScope&&globalThis.navigator instanceof WorkerNavigator),o=i?window:"undefined"!=typeof WorkerGlobalScope&&("undefined"!=typeof self&&self instanceof WorkerGlobalScope&&self||"undefined"!=typeof globalThis&&globalThis instanceof WorkerGlobalScope&&globalThis),s=Boolean("hidden"===o?.document?.visibilityState),c=/iPad|iPhone|iPod/.test(o.navigator?.userAgent),u=c&&"undefined"==typeof SharedWorker,d=((()=>{const e=o.navigator?.userAgent?.match(/Firefox[/\s](\d+\.\d+)/);Array.isArray(e)&&e.length>=2&&e[1]})(),Date.now()-(0,n.t)())},241:(e,t,r)=>{"use strict";r.d(t,{W:()=>a});var n=r(154);const i="newrelic";function a(e={}){try{n.gm.dispatchEvent(new CustomEvent(i,{detail:e}))}catch(e){}}},687:(e,t,r)=>{"use strict";r.d(t,{Ak:()=>u,Ze:()=>f,x3:()=>d});var n=r(241),i=r(836),a=r(606),o=r(860),s=r(646);const c={};function u(e,t){const r={staged:!1,priority:o.P3[t]||0};l(e),c[e].get(t)||c[e].set(t,r)}function d(e,t){e&&c[e]&&(c[e].get(t)&&c[e].delete(t),p(e,t,!1),c[e].size&&g(e))}function l(e){if(!e)throw new Error("agentIdentifier required");c[e]||(c[e]=new Map)}function f(e="",t="feature",r=!1){if(l(e),!e||!c[e].get(t)||r)return p(e,t);c[e].get(t).staged=!0,g(e)}function g(e){const t=Array.from(c[e]);t.every((([e,t])=>t.staged))&&(t.sort(((e,t)=>e[1].priority-t[1].priority)),t.forEach((([t])=>{c[e].delete(t),p(e,t)})))}function p(e,t,r=!0){const o=e?i.ee.get(e):i.ee,c=a.i.handlers;if(!o.aborted&&o.backlog&&c){if((0,n.W)({agentIdentifier:e,type:"lifecycle",name:"drain",feature:t}),r){const e=o.backlog[t],r=c[t];if(r){for(let t=0;e&&t<e.length;++t)m(e[t],r);Object.entries(r).forEach((([e,t])=>{Object.values(t||{}).forEach((t=>{t[0]?.on&&t[0]?.context()instanceof s.y&&t[0].on(e,t[1])}))}))}}o.isolatedBacklog||delete c[t],o.backlog[t]=null,o.emit("drain-"+t,[])}}function m(e,t){var r=e[1];Object.values(t[r]||{}).forEach((t=>{var r=e[0];if(t[0]===r){var n=t[1],i=e[3],a=e[2];n.apply(i,a)}}))}},836:(e,t,r)=>{"use strict";r.d(t,{P:()=>s,ee:()=>c});var n=r(384),i=r(990),a=r(646),o=r(607);const s="nr@context:".concat(o.W),c=function e(t,r){var n={},o={},d={},l=!1;try{l=16===r.length&&u.initializedAgents?.[r]?.runtime.isolatedBacklog}catch(e){}var f={on:p,addEventListener:p,removeEventListener:function(e,t){var r=n[e];if(!r)return;for(var i=0;i<r.length;i++)r[i]===t&&r.splice(i,1)},emit:function(e,r,n,i,a){!1!==a&&(a=!0);if(c.aborted&&!i)return;t&&a&&t.emit(e,r,n);for(var s=g(n),u=m(e),d=u.length,l=0;l<d;l++)u[l].apply(s,r);var p=v()[o[e]];p&&p.push([f,e,r,s]);return s},get:h,listeners:m,context:g,buffer:function(e,t){const r=v();if(t=t||"feature",f.aborted)return;Object.entries(e||{}).forEach((([e,n])=>{o[n]=t,t in r||(r[t]=[])}))},abort:function(){f._aborted=!0,Object.keys(f.backlog).forEach((e=>{delete f.backlog[e]}))},isBuffering:function(e){return!!v()[o[e]]},debugId:r,backlog:l?{}:t&&"object"==typeof t.backlog?t.backlog:{},isolatedBacklog:l};return Object.defineProperty(f,"aborted",{get:()=>{let e=f._aborted||!1;return e||(t&&(e=t.aborted),e)}}),f;function g(e){return e&&e instanceof a.y?e:e?(0,i.I)(e,s,(()=>new a.y(s))):new a.y(s)}function p(e,t){n[e]=m(e).concat(t)}function m(e){return n[e]||[]}function h(t){return d[t]=d[t]||e(f,t)}function v(){return f.backlog}}(void 0,"globalEE"),u=(0,n.Zm)();u.ee||(u.ee=c)},646:(e,t,r)=>{"use strict";r.d(t,{y:()=>n});class n{constructor(e){this.contextId=e}}},908:(e,t,r)=>{"use strict";r.d(t,{d:()=>n,p:()=>i});var n=r(836).ee.get("handle");function i(e,t,r,i,a){a?(a.buffer([e],i),a.emit(e,t,r)):(n.buffer([e],i),n.emit(e,t,r))}},606:(e,t,r)=>{"use strict";r.d(t,{i:()=>a});var n=r(908);a.on=o;var i=a.handlers={};function a(e,t,r,a){o(a||n.d,i,e,t,r)}function o(e,t,r,i,a){a||(a="feature"),e||(e=n.d);var o=t[a]=t[a]||{};(o[r]=o[r]||[]).push([e,i])}},878:(e,t,r)=>{"use strict";function n(e,t){return{capture:e,passive:!1,signal:t}}function i(e,t,r=!1,i){window.addEventListener(e,t,n(r,i))}function a(e,t,r=!1,i){document.addEventListener(e,t,n(r,i))}r.d(t,{DD:()=>a,jT:()=>n,sp:()=>i})},607:(e,t,r)=>{"use strict";r.d(t,{W:()=>n});const n=(0,r(566).bz)()},566:(e,t,r)=>{"use strict";r.d(t,{LA:()=>s,bz:()=>o});var n=r(154);const i="xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";function a(e,t){return e?15&e[t]:16*Math.random()|0}function o(){const e=n.gm?.crypto||n.gm?.msCrypto;let t,r=0;return e&&e.getRandomValues&&(t=e.getRandomValues(new Uint8Array(30))),i.split("").map((e=>"x"===e?a(t,r++).toString(16):"y"===e?(3&a()|8).toString(16):e)).join("")}function s(e){const t=n.gm?.crypto||n.gm?.msCrypto;let r,i=0;t&&t.getRandomValues&&(r=t.getRandomValues(new Uint8Array(e)));const o=[];for(var s=0;s<e;s++)o.push(a(r,i++).toString(16));return o.join("")}},614:(e,t,r)=>{"use strict";r.d(t,{BB:()=>o,H3:()=>n,g:()=>u,iL:()=>c,tS:()=>s,uh:()=>i,wk:()=>a});const n="NRBA",i="SESSION",a=144e5,o=18e5,s={STARTED:"session-started",PAUSE:"session-pause",RESET:"session-reset",RESUME:"session-resume",UPDATE:"session-update"},c={SAME_TAB:"same-tab",CROSS_TAB:"cross-tab"},u={OFF:0,FULL:1,ERROR:2}},863:(e,t,r)=>{"use strict";function n(){return Math.floor(performance.now())}r.d(t,{t:()=>n})},944:(e,t,r)=>{"use strict";r.d(t,{R:()=>i});var n=r(241);function i(e,t){"function"==typeof console.debug&&(console.debug("New Relic Warning: https://github.com/newrelic/newrelic-browser-agent/blob/main/docs/warning-codes.md#".concat(e),t),(0,n.W)({agentIdentifier:null,drained:null,type:"data",name:"warn",feature:"warn",data:{code:e,secondary:t}}))}},701:(e,t,r)=>{"use strict";r.d(t,{B:()=>a,t:()=>o});var n=r(241);const i=new Set,a={};function o(e,t){const r=t.agentIdentifier;a[r]??={},e&&"object"==typeof e&&(i.has(r)||(t.ee.emit("rumresp",[e]),a[r]=e,i.add(r),(0,n.W)({agentIdentifier:r,loaded:!0,drained:!0,type:"lifecycle",name:"load",feature:void 0,data:e})))}},990:(e,t,r)=>{"use strict";r.d(t,{I:()=>i});var n=Object.prototype.hasOwnProperty;function i(e,t,r){if(n.call(e,t))return e[t];var i=r();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(e,t,{value:i,writable:!0,enumerable:!1}),i}catch(e){}return e[t]=i,i}},389:(e,t,r)=>{"use strict";function n(e,t=500,r={}){const n=r?.leading||!1;let i;return(...r)=>{n&&void 0===i&&(e.apply(this,r),i=setTimeout((()=>{i=clearTimeout(i)}),t)),n||(clearTimeout(i),i=setTimeout((()=>{e.apply(this,r)}),t))}}function i(e){let t=!1;return(...r)=>{t||(t=!0,e.apply(this,r))}}r.d(t,{J:()=>i,s:()=>n})},289:(e,t,r)=>{"use strict";r.d(t,{GG:()=>a,Qr:()=>s,sB:()=>o});var n=r(878);function i(){return"undefined"==typeof document||"complete"===document.readyState}function a(e,t){if(i())return e();(0,n.sp)("load",e,t)}function o(e){if(i())return e();(0,n.DD)("DOMContentLoaded",e)}function s(e){if(i())return e();(0,n.sp)("popstate",e)}},384:(e,t,r)=>{"use strict";r.d(t,{NT:()=>a,US:()=>u,Zm:()=>o,bQ:()=>c,dV:()=>s,pV:()=>d});var n=r(154),i=r(863);const a={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net"};function o(){return n.gm.NREUM||(n.gm.NREUM={}),void 0===n.gm.newrelic&&(n.gm.newrelic=n.gm.NREUM),n.gm.NREUM}function s(){let e=o();return e.o||(e.o={ST:n.gm.setTimeout,SI:n.gm.setImmediate,CT:n.gm.clearTimeout,XHR:n.gm.XMLHttpRequest,REQ:n.gm.Request,EV:n.gm.Event,PR:n.gm.Promise,MO:n.gm.MutationObserver,FETCH:n.gm.fetch,WS:n.gm.WebSocket}),e}function c(e,t){let r=o();r.initializedAgents??={},t.initializedAt={ms:(0,i.t)(),date:new Date},r.initializedAgents[e]=t}function u(e,t){o()[e]=t}function d(){return function(){let e=o();const t=e.info||{};e.info={beacon:a.beacon,errorBeacon:a.errorBeacon,...t}}(),function(){let e=o();const t=e.init||{};e.init={...t}}(),s(),function(){let e=o();const t=e.loader_config||{};e.loader_config={...t}}(),o()}},843:(e,t,r)=>{"use strict";r.d(t,{u:()=>i});var n=r(878);function i(e,t=!1,r,i){(0,n.DD)("visibilitychange",(function(){if(t)return void("hidden"===document.visibilityState&&e());e(document.visibilityState)}),r,i)}},773:(e,t,r)=>{"use strict";r.d(t,{z_:()=>a,XG:()=>s,TZ:()=>n,rs:()=>i,xV:()=>o});r(154),r(566),r(384);const n=r(860).K7.metrics,i="sm",a="cm",o="storeSupportabilityMetrics",s="storeEventMetrics"},630:(e,t,r)=>{"use strict";r.d(t,{T:()=>n});const n=r(860).K7.pageViewEvent},782:(e,t,r)=>{"use strict";r.d(t,{T:()=>n});const n=r(860).K7.pageViewTiming},234:(e,t,r)=>{"use strict";r.d(t,{W:()=>a});var n=r(836),i=r(687);class a{constructor(e,t){this.agentIdentifier=e,this.ee=n.ee.get(e),this.featureName=t,this.blocked=!1}deregisterDrain(){(0,i.x3)(this.agentIdentifier,this.featureName)}}},741:(e,t,r)=>{"use strict";r.d(t,{W:()=>a});var n=r(944),i=r(261);class a{#e(e,...t){if(this[e]!==a.prototype[e])return this[e](...t);(0,n.R)(35,e)}addPageAction(e,t){return this.#e(i.hG,e,t)}register(e){return this.#e(i.eY,e)}recordCustomEvent(e,t){return this.#e(i.fF,e,t)}setPageViewName(e,t){return this.#e(i.Fw,e,t)}setCustomAttribute(e,t,r){return this.#e(i.cD,e,t,r)}noticeError(e,t){return this.#e(i.o5,e,t)}setUserId(e){return this.#e(i.Dl,e)}setApplicationVersion(e){return this.#e(i.nb,e)}setErrorHandler(e){return this.#e(i.bt,e)}addRelease(e,t){return this.#e(i.k6,e,t)}log(e,t){return this.#e(i.$9,e,t)}start(){return this.#e(i.d3)}finished(e){return this.#e(i.BL,e)}recordReplay(){return this.#e(i.CH)}pauseReplay(){return this.#e(i.Tb)}addToTrace(e){return this.#e(i.U2,e)}setCurrentRouteName(e){return this.#e(i.PA,e)}interaction(){return this.#e(i.dT)}wrapLogger(e,t,r){return this.#e(i.Wb,e,t,r)}measure(e,t){return this.#e(i.V1,e,t)}}},261:(e,t,r)=>{"use strict";r.d(t,{$9:()=>u,BL:()=>s,CH:()=>g,Dl:()=>_,Fw:()=>y,PA:()=>h,Pl:()=>n,Tb:()=>l,U2:()=>a,V1:()=>k,Wb:()=>x,bt:()=>b,cD:()=>v,d3:()=>w,dT:()=>c,eY:()=>p,fF:()=>f,hG:()=>i,k6:()=>o,nb:()=>m,o5:()=>d});const n="api-",i="addPageAction",a="addToTrace",o="addRelease",s="finished",c="interaction",u="log",d="noticeError",l="pauseReplay",f="recordCustomEvent",g="recordReplay",p="register",m="setApplicationVersion",h="setCurrentRouteName",v="setCustomAttribute",b="setErrorHandler",y="setPageViewName",_="setUserId",w="start",x="wrapLogger",k="measure"},163:(e,t,r)=>{"use strict";r.d(t,{j:()=>E});var n=r(384),i=r(741);var a=r(555);r(860).K7.genericEvents;const o="experimental.marks",s="experimental.measures",c="experimental.resources",u=e=>{if(!e||"string"!=typeof e)return!1;try{document.createDocumentFragment().querySelector(e)}catch{return!1}return!0};var d=r(614),l=r(944),f=r(122);const g="[data-nr-mask]",p=e=>(0,f.a)(e,(()=>{const e={feature_flags:[],experimental:{marks:!1,measures:!1,resources:!1},mask_selector:"*",block_selector:"[data-nr-block]",mask_input_options:{color:!1,date:!1,"datetime-local":!1,email:!1,month:!1,number:!1,range:!1,search:!1,tel:!1,text:!1,time:!1,url:!1,week:!1,textarea:!1,select:!1,password:!0}};return{ajax:{deny_list:void 0,block_internal:!0,enabled:!0,autoStart:!0},api:{allow_registered_children:!0,duplicate_registered_data:!1},distributed_tracing:{enabled:void 0,exclude_newrelic_header:void 0,cors_use_newrelic_header:void 0,cors_use_tracecontext_headers:void 0,allowed_origins:void 0},get feature_flags(){return e.feature_flags},set feature_flags(t){e.feature_flags=t},generic_events:{enabled:!0,autoStart:!0},harvest:{interval:30},jserrors:{enabled:!0,autoStart:!0},logging:{enabled:!0,autoStart:!0},metrics:{enabled:!0,autoStart:!0},obfuscate:void 0,page_action:{enabled:!0},page_view_event:{enabled:!0,autoStart:!0},page_view_timing:{enabled:!0,autoStart:!0},performance:{get capture_marks(){return e.feature_flags.includes(o)||e.experimental.marks},set capture_marks(t){e.experimental.marks=t},get capture_measures(){return e.feature_flags.includes(s)||e.experimental.measures},set capture_measures(t){e.experimental.measures=t},capture_detail:!0,resources:{get enabled(){return e.feature_flags.includes(c)||e.experimental.resources},set enabled(t){e.experimental.resources=t},asset_types:[],first_party_domains:[],ignore_newrelic:!0}},privacy:{cookies_enabled:!0},proxy:{assets:void 0,beacon:void 0},session:{expiresMs:d.wk,inactiveMs:d.BB},session_replay:{autoStart:!0,enabled:!1,preload:!1,sampling_rate:10,error_sampling_rate:100,collect_fonts:!1,inline_images:!1,fix_stylesheets:!0,mask_all_inputs:!0,get mask_text_selector(){return e.mask_selector},set mask_text_selector(t){u(t)?e.mask_selector="".concat(t,",").concat(g):""===t||null===t?e.mask_selector=g:(0,l.R)(5,t)},get block_class(){return"nr-block"},get ignore_class(){return"nr-ignore"},get mask_text_class(){return"nr-mask"},get block_selector(){return e.block_selector},set block_selector(t){u(t)?e.block_selector+=",".concat(t):""!==t&&(0,l.R)(6,t)},get mask_input_options(){return e.mask_input_options},set mask_input_options(t){t&&"object"==typeof t?e.mask_input_options={...t,password:!0}:(0,l.R)(7,t)}},session_trace:{enabled:!0,autoStart:!0},soft_navigations:{enabled:!0,autoStart:!0},spa:{enabled:!0,autoStart:!0},ssl:void 0,user_actions:{enabled:!0,elementAttributes:["id","className","tagName","type"]}}})());var m=r(154),h=r(324);let v=0;const b={buildEnv:h.F3,distMethod:h.Xs,version:h.xv,originTime:m.WN},y={appMetadata:{},customTransaction:void 0,denyList:void 0,disabled:!1,entityManager:void 0,harvester:void 0,isolatedBacklog:!1,isRecording:!1,loaderType:void 0,maxBytes:3e4,obfuscator:void 0,onerror:void 0,ptid:void 0,releaseIds:{},session:void 0,timeKeeper:void 0,get harvestCount(){return++v}},_=e=>{const t=(0,f.a)(e,y),r=Object.keys(b).reduce(((e,t)=>(e[t]={value:b[t],writable:!1,configurable:!0,enumerable:!0},e)),{});return Object.defineProperties(t,r)};var w=r(701);const x=e=>{const t=e.startsWith("http");e+="/",r.p=t?e:"https://"+e};var k=r(836),A=r(241);const S={accountID:void 0,trustKey:void 0,agentID:void 0,licenseKey:void 0,applicationID:void 0,xpid:void 0},T=e=>(0,f.a)(e,S),R=new Set;function E(e,t={},r,o){let{init:s,info:c,loader_config:u,runtime:d={},exposed:l=!0}=t;if(!c){const e=(0,n.pV)();s=e.init,c=e.info,u=e.loader_config}e.init=p(s||{}),e.loader_config=T(u||{}),c.jsAttributes??={},m.bv&&(c.jsAttributes.isWorker=!0),e.info=(0,a.D)(c);const f=e.init,g=[c.beacon,c.errorBeacon];R.has(e.agentIdentifier)||(f.proxy.assets&&(x(f.proxy.assets),g.push(f.proxy.assets)),f.proxy.beacon&&g.push(f.proxy.beacon),function(e){const t=(0,n.pV)();Object.getOwnPropertyNames(i.W.prototype).forEach((r=>{const n=i.W.prototype[r];if("function"!=typeof n||"constructor"===n)return;let a=t[r];e[r]&&!1!==e.exposed&&"micro-agent"!==e.runtime?.loaderType&&(t[r]=(...t)=>{const n=e[r](...t);return a?a(...t):n})}))}(e),(0,n.US)("activatedFeatures",w.B),e.runSoftNavOverSpa&&=!0===f.soft_navigations.enabled&&f.feature_flags.includes("soft_nav")),d.denyList=[...f.ajax.deny_list||[],...f.ajax.block_internal?g:[]],d.ptid=e.agentIdentifier,d.loaderType=r,e.runtime=_(d),R.has(e.agentIdentifier)||(e.ee=k.ee.get(e.agentIdentifier),e.exposed=l,(0,A.W)({agentIdentifier:e.agentIdentifier,drained:!!w.B?.[e.agentIdentifier],type:"lifecycle",name:"initialize",feature:void 0,data:e.config})),R.add(e.agentIdentifier)}},374:(e,t,r)=>{r.nc=(()=>{try{return document?.currentScript?.nonce}catch(e){}return""})()},860:(e,t,r)=>{"use strict";r.d(t,{$J:()=>d,K7:()=>c,P3:()=>u,XX:()=>i,Yy:()=>s,df:()=>a,qY:()=>n,v4:()=>o});const n="events",i="jserrors",a="browser/blobs",o="rum",s="browser/logs",c={ajax:"ajax",genericEvents:"generic_events",jserrors:i,logging:"logging",metrics:"metrics",pageAction:"page_action",pageViewEvent:"page_view_event",pageViewTiming:"page_view_timing",sessionReplay:"session_replay",sessionTrace:"session_trace",softNav:"soft_navigations",spa:"spa"},u={[c.pageViewEvent]:1,[c.pageViewTiming]:2,[c.metrics]:3,[c.jserrors]:4,[c.spa]:5,[c.ajax]:6,[c.sessionTrace]:7,[c.softNav]:8,[c.sessionReplay]:9,[c.logging]:10,[c.genericEvents]:11},d={[c.pageViewEvent]:o,[c.pageViewTiming]:n,[c.ajax]:n,[c.spa]:n,[c.softNav]:n,[c.metrics]:i,[c.jserrors]:i,[c.sessionTrace]:a,[c.sessionReplay]:a,[c.logging]:s,[c.genericEvents]:"ins"}}},n={};function i(e){var t=n[e];if(void 0!==t)return t.exports;var a=n[e]={exports:{}};return r[e](a,a.exports,i),a.exports}i.m=r,i.d=(e,t)=>{for(var r in t)i.o(t,r)&&!i.o(e,r)&&Object.defineProperty(e,r,{enumerable:!0,get:t[r]})},i.f={},i.e=e=>Promise.all(Object.keys(i.f).reduce(((t,r)=>(i.f[r](e,t),t)),[])),i.u=e=>"nr-rum-1.293.0.min.js",i.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),e={},t="NRBA-1.293.0.PROD:",i.l=(r,n,a,o)=>{if(e[r])e[r].push(n);else{var s,c;if(void 0!==a)for(var u=document.getElementsByTagName("script"),d=0;d<u.length;d++){var l=u[d];if(l.getAttribute("src")==r||l.getAttribute("data-webpack")==t+a){s=l;break}}if(!s){c=!0;var f={296:"sha512-M1viQxU/Sd10c/wA0iJyMGykq7mUO4/cNh2pUlWVWSRdp2RUo2Lmen9N19KuzHKjUln7vOC7HGbkzvGvRT/yQg=="};(s=document.createElement("script")).charset="utf-8",s.timeout=120,i.nc&&s.setAttribute("nonce",i.nc),s.setAttribute("data-webpack",t+a),s.src=r,0!==s.src.indexOf(window.location.origin+"/")&&(s.crossOrigin="anonymous"),f[o]&&(s.integrity=f[o])}e[r]=[n];var g=(t,n)=>{s.onerror=s.onload=null,clearTimeout(p);var i=e[r];if(delete e[r],s.parentNode&&s.parentNode.removeChild(s),i&&i.forEach((e=>e(n))),t)return t(n)},p=setTimeout(g.bind(null,void 0,{type:"timeout",target:s}),12e4);s.onerror=g.bind(null,s.onerror),s.onload=g.bind(null,s.onload),c&&document.head.appendChild(s)}},i.r=e=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},i.p="https://js-agent.newrelic.com/",(()=>{var e={374:0,840:0};i.f.j=(t,r)=>{var n=i.o(e,t)?e[t]:void 0;if(0!==n)if(n)r.push(n[2]);else{var a=new Promise(((r,i)=>n=e[t]=[r,i]));r.push(n[2]=a);var o=i.p+i.u(t),s=new Error;i.l(o,(r=>{if(i.o(e,t)&&(0!==(n=e[t])&&(e[t]=void 0),n)){var a=r&&("load"===r.type?"missing":r.type),o=r&&r.target&&r.target.src;s.message="Loading chunk "+t+" failed.\n("+a+": "+o+")",s.name="ChunkLoadError",s.type=a,s.request=o,n[1](s)}}),"chunk-"+t,t)}};var t=(t,r)=>{var n,a,[o,s,c]=r,u=0;if(o.some((t=>0!==e[t]))){for(n in s)i.o(s,n)&&(i.m[n]=s[n]);if(c)c(i)}for(t&&t(r);u<o.length;u++)a=o[u],i.o(e,a)&&e[a]&&e[a][0](),e[a]=0},r=self["webpackChunk:NRBA-1.293.0.PROD"]=self["webpackChunk:NRBA-1.293.0.PROD"]||[];r.forEach(t.bind(null,0)),r.push=t.bind(null,r.push.bind(r))})(),(()=>{"use strict";i(374);var e=i(566),t=i(741);class r extends t.W{agentIdentifier=(0,e.LA)(16)}var n=i(860);const a=Object.values(n.K7);var o=i(163);var s=i(908),c=i(863),u=i(261),d=i(241),l=i(944),f=i(701),g=i(773);function p(e,t,i,a){const o=a||i;!o||o[e]&&o[e]!==r.prototype[e]||(o[e]=function(){(0,s.p)(g.xV,["API/"+e+"/called"],void 0,n.K7.metrics,i.ee),(0,d.W)({agentIdentifier:i.agentIdentifier,drained:!!f.B?.[i.agentIdentifier],type:"data",name:"api",feature:u.Pl+e,data:{}});try{return t.apply(this,arguments)}catch(e){(0,l.R)(23,e)}})}function m(e,t,r,n,i){const a=e.info;null===r?delete a.jsAttributes[t]:a.jsAttributes[t]=r,(i||null===r)&&(0,s.p)(u.Pl+n,[(0,c.t)(),t,r],void 0,"session",e.ee)}var h=i(687),v=i(234),b=i(289),y=i(154),_=i(384);const w=e=>y.RI&&!0===e?.privacy.cookies_enabled;function x(e){return!!(0,_.dV)().o.MO&&w(e)&&!0===e?.session_trace.enabled}var k=i(389);class A extends v.W{constructor(e,t){super(e.agentIdentifier,t),this.abortHandler=void 0,this.featAggregate=void 0,this.onAggregateImported=void 0,this.deferred=Promise.resolve(),!1===e.init[this.featureName].autoStart?this.deferred=new Promise(((t,r)=>{this.ee.on("manual-start-all",(0,k.J)((()=>{(0,h.Ak)(e.agentIdentifier,this.featureName),t()})))})):(0,h.Ak)(e.agentIdentifier,t)}importAggregator(e,t,r={}){if(this.featAggregate)return;let a;this.onAggregateImported=new Promise((e=>{a=e}));const o=async()=>{let o;await this.deferred;try{if(w(e.init)){const{setupAgentSession:t}=await i.e(296).then(i.bind(i,663));o=t(e)}}catch(e){(0,l.R)(20,e),this.ee.emit("internal-error",[e]),this.featureName===n.K7.sessionReplay&&this.abortHandler?.()}try{if(!this.#t(this.featureName,o,e.init))return(0,h.Ze)(this.agentIdentifier,this.featureName),void a(!1);const{Aggregate:n}=await t();this.featAggregate=new n(e,r),e.runtime.harvester.initializedAggregates.push(this.featAggregate),a(!0)}catch(e){(0,l.R)(34,e),this.abortHandler?.(),(0,h.Ze)(this.agentIdentifier,this.featureName,!0),a(!1),this.ee&&this.ee.abort()}};y.RI?(0,b.GG)((()=>o()),!0):o()}#t(e,t,r){switch(e){case n.K7.sessionReplay:return x(r)&&!!t;case n.K7.sessionTrace:return!!t;default:return!0}}}var S=i(630),T=i(614);class R extends A{static featureName=S.T;constructor(e){var t;super(e,S.T),this.setupInspectionEvents(e.agentIdentifier),t=e,p(u.Fw,(function(e,r){"string"==typeof e&&("/"!==e.charAt(0)&&(e="/"+e),t.runtime.customTransaction=(r||"http://custom.transaction")+e,(0,s.p)(u.Pl+u.Fw,[(0,c.t)()],void 0,void 0,t.ee))}),t),this.ee.on("api-send-rum",((e,t)=>(0,s.p)("send-rum",[e,t],void 0,this.featureName,this.ee))),this.importAggregator(e,(()=>i.e(296).then(i.bind(i,108))))}setupInspectionEvents(e){const t=(t,r)=>{t&&(0,d.W)({agentIdentifier:e,timeStamp:t.timeStamp,loaded:"complete"===t.target.readyState,type:"window",name:r,data:t.target.location+""})};(0,b.sB)((e=>{t(e,"DOMContentLoaded")})),(0,b.GG)((e=>{t(e,"load")})),(0,b.Qr)((e=>{t(e,"navigate")})),this.ee.on(T.tS.UPDATE,((t,r)=>{(0,d.W)({agentIdentifier:e,type:"lifecycle",name:"session",data:r})}))}}var E=i(843),N=i(878),j=i(782);class I extends A{static featureName=j.T;constructor(e){super(e,j.T),y.RI&&((0,E.u)((()=>(0,s.p)("docHidden",[(0,c.t)()],void 0,j.T,this.ee)),!0),(0,N.sp)("pagehide",(()=>(0,s.p)("winPagehide",[(0,c.t)()],void 0,j.T,this.ee))),this.importAggregator(e,(()=>i.e(296).then(i.bind(i,350)))))}}class O extends A{static featureName=g.TZ;constructor(e){super(e,g.TZ),y.RI&&document.addEventListener("securitypolicyviolation",(e=>{(0,s.p)(g.xV,["Generic/CSPViolation/Detected"],void 0,this.featureName,this.ee)})),this.importAggregator(e,(()=>i.e(296).then(i.bind(i,373))))}}new class extends r{constructor(e){var t;(super(),y.gm)?(this.features={},(0,_.bQ)(this.agentIdentifier,this),this.desiredFeatures=new Set(e.features||[]),this.desiredFeatures.add(R),this.runSoftNavOverSpa=[...this.desiredFeatures].some((e=>e.featureName===n.K7.softNav)),(0,o.j)(this,e,e.loaderType||"agent"),t=this,p(u.cD,(function(e,r,n=!1){if("string"==typeof e){if(["string","number","boolean"].includes(typeof r)||null===r)return m(t,e,r,u.cD,n);(0,l.R)(40,typeof r)}else(0,l.R)(39,typeof e)}),t),function(e){p(u.Dl,(function(t){if("string"==typeof t||null===t)return m(e,"enduser.id",t,u.Dl,!0);(0,l.R)(41,typeof t)}),e)}(this),function(e){p(u.nb,(function(t){if("string"==typeof t||null===t)return m(e,"application.version",t,u.nb,!1);(0,l.R)(42,typeof t)}),e)}(this),function(e){p(u.d3,(function(){e.ee.emit("manual-start-all")}),e)}(this),this.run()):(0,l.R)(21)}get config(){return{info:this.info,init:this.init,loader_config:this.loader_config,runtime:this.runtime}}get api(){return this}run(){try{const e=function(e){const t={};return a.forEach((r=>{t[r]=!!e[r]?.enabled})),t}(this.init),t=[...this.desiredFeatures];t.sort(((e,t)=>n.P3[e.featureName]-n.P3[t.featureName])),t.forEach((t=>{if(!e[t.featureName]&&t.featureName!==n.K7.pageViewEvent)return;if(this.runSoftNavOverSpa&&t.featureName===n.K7.spa)return;if(!this.runSoftNavOverSpa&&t.featureName===n.K7.softNav)return;const r=function(e){switch(e){case n.K7.ajax:return[n.K7.jserrors];case n.K7.sessionTrace:return[n.K7.ajax,n.K7.pageViewEvent];case n.K7.sessionReplay:return[n.K7.sessionTrace];case n.K7.pageViewTiming:return[n.K7.pageViewEvent];default:return[]}}(t.featureName).filter((e=>!(e in this.features)));r.length>0&&(0,l.R)(36,{targetFeature:t.featureName,missingDependencies:r}),this.features[t.featureName]=new t(this)}))}catch(e){(0,l.R)(22,e);for(const e in this.features)this.features[e].abortHandler?.();const t=(0,_.Zm)();delete t.initializedAgents[this.agentIdentifier]?.features,delete this.sharedAggregator;return t.ee.get(this.agentIdentifier).abort(),!1}}}({features:[R,I,O],loaderType:"lite"})})()})();</script>
+<title>All Textbooks - Open Textbook Library</title>
+<link rel="icon" type="image/x-icon" href="/assets/common/favicon/favicon-6666d4af5ecb597851b1bd6b4af4d8472feee5ef149656c053063f5c427c993c.ico" sizes="32x32" />
+<link rel="icon" type="image/svg+xml" href="/assets/common/favicon/icon-0d2a8f5b51ab3059a14f0742b4afa82fe4ecfcc80305b3c52a94bf0e16aac2a1.svg" />
+<link rel="apple-touch-icon" type="image/x-icon" href="/assets/common/favicon/apple-touch-icon-d7d601b3543106476d46692d8ea08dea4b727bbbcdf744e1f938f5e2fe3a69c2.png" sizes="120x120" />
+<link rel="icon" type="image/webp" href="/assets/common/favicon/icon-32x32-c803789e4367172c87005d8724c6548012c9cabdd427eb9568dae1b5b84cbeff.webp" sizes="32x32" />
+<link rel="icon" type="image/webp" href="/assets/common/favicon/icon-16x16-1fb95c64521256b6558821cc3c3d8d0d236531556f15788b0de758b456de57ff.webp" sizes="16x16" />
+<link rel="mask-icon" type="image/x-icon" href="/assets/common/favicon/safari-pinned-tab-92ce09c3a70c51dd7b3743e4cc638a69dac4e6fb6889cf49b0aaee2407fed538.svg" color="#872384" />
+<meta content='#ffffff' name='msapplication-TileColor'>
+<meta content='#ffffff' name='theme-color'>
+
+<meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+<meta content='width=device-width, initial-scale=1, shrink-to-fit=no' name='viewport'>
+<link href='/humans.txt' rel='author'>
+<link href='/opentextbooks/manifest.json' rel='manifest'>
+<link href='/opentextbooks/search.xml' rel='search' title='Open Textbook Library' type='application/opensearchdescription+xml'>
+<link href='https://open.umn.edu/opentextbooks/textbooks' rel='canonical'>
+<meta content='Open textbook catalog' name='description'>
+<meta content='open education, open educational resources, OER, open publishing, open textbooks, open textbook library, equity higher education' name='keywords'>
+<meta content='summary' name='twitter:card'>
+<meta content='open.umn.edu' property='twitter:domain'>
+<meta content='https://open.umn.edu/opentextbooks/textbooks?term=calculus&amp;commit=Search' property='twitter:url'>
+<meta content='@OpenEd_Network' name='twitter:site'>
+<meta content='All Textbooks - Open Textbook Library' name='twitter:title'>
+<meta content='Open textbook catalog' name='twitter:description'>
+<meta content='All Textbooks - Open Textbook Library' property='og:title'>
+<meta content='Open textbook catalog' property='og:description'>
+<meta content='Open Textbook Library' property='og:site_name'>
+<meta content='website' property='og:type'>
+<meta content='https://open.umn.edu/opentextbooks/textbooks?term=calculus&amp;commit=Search' property='og:url'>
+<meta content='en' property='og:locale'>
+
+<link rel="alternate" type="application/json" title="JSON" href="https://open.umn.edu/opentextbooks/textbooks.json" />
+<link rel="alternate" type="application/rss+xml" title="RSS" href="https://open.umn.edu/opentextbooks/textbooks.rss" />
+<link rel="alternate" type="application/atom+xml" title="ATOM" href="https://open.umn.edu/opentextbooks/textbooks.atom" />
+
+<link rel="stylesheet" href="/assets/library-781e36419ece207898b67c93a56f17554a4f43d59b73e87ce13e0891217176d5.css" media="all" />
+<script src="/assets/jquery-sprockets-9604073ae34ebee077913ca351aa2b7f8ca6a1c14cd5883622ccf278d39ea507.js" nonce="55125e76a4491987d2764e6421e975b9"></script>
+<script type="importmap" data-turbo-track="reload" nonce="55125e76a4491987d2764e6421e975b9">{
+  "imports": {
+    "controllers/hw_combobox_controller": "/assets/hotwire_combobox.esm-dbe5feb99269f182686e1e8d1db6d67402ea96ad379a1683b62ef8ae45fa5efe.js",
+    "@rails/ujs": "/assets/@rails--ujs-539e0c5fdda60fc0fda95b372aa523264324b5674ff5588c8717c88b90b6ebae.js",
+    "@hotwired/turbo-rails": "/assets/turbo.min-a2847e7e1c982a7f19af087f7adbe8f7bc19b2ce6e0cdfbc631479273fabfc2d.js",
+    "@hotwired/stimulus": "/assets/stimulus.min-6dffef3d415b06e9a0e43e64748aac6d2a98f87793d6b5b1dc2a00fec5142f21.js",
+    "@hotwired/stimulus-loading": "/assets/stimulus-loading-b6081246c3a026b7ffd648c4b58d9f60146e33573a181eabbf14a484d6e8979e.js",
+    "bootstrap": "/assets/bootstrap.bundle.min-c1916178b069202f2b150fed4b75c3f1d9e4adf156df22a461acf7e64d268568.js",
+    "tinymce": "/assets/tinymce-9883d4ce7abffe2de24c66b8e81edf042f062ad123a132677eb63694bfc793e7.js",
+    "chartkick": "/assets/chartkick-c20eba1b2a7e7591efd43ac5aac663d75fab9a9392fd8c89f84425daca857b8c.js",
+    "Chart.bundle": "/assets/Chart.bundle-bbfd6eae0a7619a249e89093ae035ef4f85f6cc14b7477ee250dd000d90a74d1.js",
+    "leaflet": "/assets/leaflet-224b432d7ebc13377e0d4952499678c671b104ffbe36dd6c479fc8583f9e5289.js",
+    "bootstrap5-tags": "/assets/bootstrap5-tags-e1181c6570154590ab36498e2e5af7e25cbe063ddc851c9d0bbe158b5d709361.js",
+    "@stimulus-components/rails-nested-form": "/assets/@stimulus-components--rails-nested-form-f89cc67954ecf3397221d0a295e73e636adb8cfb8ff30c730432a9b30a13ceb9.js",
+    "sortablejs": "/assets/sortablejs-e346030bcbec5adc12b5cfde95574d7e708906109843abd30e885b9919976a4c.js",
+    "jquery": "/assets/jquery-ce32ce5ce754b04a94396ebfdbf5fb2c8adeac11e90617dbdc84bedef016b729.js",
+    "jquery-ui": "/assets/jquery-ui-7a70cfac4d0419cd5e3e30d451bed5fb6c1dd0a5cbeb2d5a32734193bc0c388e.js",
+    "bootstrap-datepicker": "/assets/bootstrap-datepicker-05a9a0e2f0b57636a7ada905d081b2af062cffde2b5c69ec1cba848c12e361de.js",
+    "bootstrap-table": "/assets/bootstrap-table-3e59dbc5f8f97be1a28611c6b2f7a6f834c7d889add13843898442f095572366.js",
+    "admin": "/assets/admin-8910ae5e10966a5b8ab9c2f2efd122be86a7a4e37ac8d7632e94851e3cf40a27.js",
+    "library": "/assets/library-adc792cc9e4bee0e876616c97c88bda4d7fe0932b671f2e3971bb8c38cf22eb8.js",
+    "network": "/assets/network-30537bb58853571af515a268cdd789a230008b64ce211b4618aefac11c136c01.js",
+    "oen": "/assets/oen-3e80124a9424a330109be3be381d625214213435471b05a68fe670da6cdb31a9.js",
+    "open": "/assets/open-bfbe344949720e28e643345b827fffba9d6d205ca68270fc396294a63d9fe7af.js",
+    "admin/init": "/assets/admin/init-b95579e484e750f244b4e4b415f29272ed233417886e56ec164b2b9c1bbf9bb5.js",
+    "admin/main": "/assets/admin/main-d486bca051f3b6c47d34c2bcbc83beecd18de3b5465fcaf2963c78b642d6bb9d.js",
+    "controllers/admin/calendar_controller": "/assets/controllers/admin/calendar_controller-797098041d34432dd450d5f8626cb71a2d0e0a1b3029c4512cfce094b5dba2ad.js",
+    "controllers/admin/check_column_controller": "/assets/controllers/admin/check_column_controller-b7b7f14dd750fc771bad42c3e0fafc97a5f6bdb415b076050c03a937b2b87eaf.js",
+    "controllers/admin/check_subjects_controller": "/assets/controllers/admin/check_subjects_controller-5bba6a63af9bafea5c92bdd1717c8b60685e42e48ac9717238effe9cb89fe408.js",
+    "controllers/admin/clipboard_controller": "/assets/controllers/admin/clipboard_controller-46e2608e27b58151c3aa68f15107a119763c3e6e46b7805a6c322b8b35ab33f4.js",
+    "controllers/admin/course_controller": "/assets/controllers/admin/course_controller-3041b05ab3e436d7d3c9983bc5cfffbc48dd9f267b463351b9cc7355a0640a33.js",
+    "controllers/admin/datepicker_controller": "/assets/controllers/admin/datepicker_controller-00c83c29de2502fd9434f1129c1fe6ddf9e653eeba9bdff4e29256f5ed9be461.js",
+    "controllers/admin/drag_controller": "/assets/controllers/admin/drag_controller-b86bb2138fe0d7024242fb1a6f616128809ddb39076920fc9af4893c25b6aa45.js",
+    "controllers/admin/enrollment_controller": "/assets/controllers/admin/enrollment_controller-53d0f7c4fb2a10dd3368b0b228c85c2fac5199c43f23e5280a2143e98135da85.js",
+    "controllers/admin/file_upload_controller": "/assets/controllers/admin/file_upload_controller-47839006892d237059674276efbb9cc14af427827c6c19629dc1915c9fe9f903.js",
+    "controllers/admin/form_controller": "/assets/controllers/admin/form_controller-ebe39545fdb125989e221fe1863f3980396b8f4696d801a1e43b3a7b035271c8.js",
+    "controllers/admin/legend_controller": "/assets/controllers/admin/legend_controller-43c692231bf004eab61e1c191e7cfad59dfb213a22a603a44aa383c2226c3fa2.js",
+    "controllers/admin/membership_controller": "/assets/controllers/admin/membership_controller-550e3d8b66518a11d9be20e2d3ed17c15bd024ced5220eeb8c386f02688a15e6.js",
+    "controllers/admin/modal_controller": "/assets/controllers/admin/modal_controller-82e0791e54dd74c8081558907b4fa68f9fbccb1ef320d100dd5639ac1950246d.js",
+    "controllers/admin/popover_controller": "/assets/controllers/admin/popover_controller-25c097a2d03e3e2a0f445fac72ed686cbc59a2dd6b5bbce9aca6632567bc266d.js",
+    "controllers/admin/recipient_table_controller": "/assets/controllers/admin/recipient_table_controller-ebbab91eb66311c8968b03458d72d2c46d03fb3efa5707e6bae2bd98573e7521.js",
+    "controllers/admin/remote_button_controller": "/assets/controllers/admin/remote_button_controller-2f81c148e4050ff077f4d2d6793fde0f16cfc79cdbb0949774e43cadf88cfa6a.js",
+    "controllers/admin/request_form_controller": "/assets/controllers/admin/request_form_controller-b6deb5e56caf6683b83cad22e261b3d30a7b77f41a97b5d7056cec35bca81240.js",
+    "controllers/admin/request_recipient_controller": "/assets/controllers/admin/request_recipient_controller-e860e59e8ab940452b8e9c20f4e5e59afdaa158f302d8df0aac1b82dfa3e11bb.js",
+    "controllers/admin/tab_controller": "/assets/controllers/admin/tab_controller-d47080c654293d9b21a6729d0342329bc4d3262129bcc5f82d6912281e3883fd.js",
+    "controllers/admin/tab_nav_controller": "/assets/controllers/admin/tab_nav_controller-cd9460b3d6e839a542eb669f8de61ef1ed1db001abba23033dbeb7050d0772b0.js",
+    "controllers/admin/table_controller": "/assets/controllers/admin/table_controller-88ef8d7864501d1f485182828935d82db0977aaadb5db13382c93b9be9d56adf.js",
+    "controllers/admin/tag_area_controller": "/assets/controllers/admin/tag_area_controller-b69bfc8991a3bc3471da762ee4b72a4c953ee11524348837fcfefa5fb629a709.js",
+    "controllers/admin/text_area_controller": "/assets/controllers/admin/text_area_controller-4f6ac30adf5c7302b5dffbb8693c895549419965ff1db7c4f25cd2f27ec2d058.js",
+    "controllers/admin/toggleable_controller": "/assets/controllers/admin/toggleable_controller-f5dcf182dba2288dfd4096dc9931f06aa8e0ed00ca2d35db0ef6ba57f3d103bb.js",
+    "controllers/admin/workshop_form_controller": "/assets/controllers/admin/workshop_form_controller-4c969b8236d763ef29176f4e8a588079dfa3f5cac61409afe23875c763bfc282.js",
+    "controllers/application": "/assets/controllers/application-6c5b179927587bf93b8fb2fbf83a17f964d01cc0bdcdd81537fe2f11fea6e07a.js",
+    "controllers/common/accordion_controller": "/assets/controllers/common/accordion_controller-7dc8a1559c1bb5495c2731ff1406e453f5017980b96eb0af7faaeefe19e06571.js",
+    "controllers/common/cover_controller": "/assets/controllers/common/cover_controller-5ad2350622cb8b081a1a088c34599dccb0b336a15025a77d26c1e47f4b631f9f.js",
+    "controllers/common/infinite_scroll_controller": "/assets/controllers/common/infinite_scroll_controller-01e09b65a6f8705212d198f43451588fd7086111296a07b0390a47a90c7d5b78.js",
+    "controllers/common/preview_controller": "/assets/controllers/common/preview_controller-892f05b83bd46366ffd6aee35c9f519fa9a57aa3f63931eae699c2c0bb83e7fb.js",
+    "controllers/common/toggleable_controller": "/assets/controllers/common/toggleable_controller-9c8f54868a077aa386f7caf210de2504d44904394ddf786272d5b8dddd854cee.js",
+    "controllers/common/tooltip_controller": "/assets/controllers/common/tooltip_controller-cad085380a37ac2fdf7089b216c8036626181360236c4b529b3674b7fae8ccf8.js",
+    "controllers": "/assets/controllers/index-d50fc38857ec5b80d738c8f000c8f77decfde685e9370ba5e3383152a2f57985.js",
+    "controllers/library/filter_controller": "/assets/controllers/library/filter_controller-b5e44577c5687d34b8cff33a423384dd6ebbdce65ff7f1b53fa9185d08a19c7f.js",
+    "controllers/library/review_controller": "/assets/controllers/library/review_controller-5ddceba71a5e5b1459d2111d9fbdec23ea442a018a2e20026e76f8d9f61eefeb.js",
+    "controllers/oen/map_controller": "/assets/controllers/oen/map_controller-6786a041a058b7fcbf97e99c9f3a3571a9009c7edbc276b24d50fa49dc1511ff.js",
+    "controllers/oen/profiles_controller": "/assets/controllers/oen/profiles_controller-b724513ca3ec38dbae683e975414a1f1f899a9a88bc69039c1222af849dee1dc.js",
+    "controllers/oen/sidebar_controller": "/assets/controllers/oen/sidebar_controller-9fd0a65e647e1284801cc4326380ca25fd1eca5920994ae2f7ed7f397cfbe749.js",
+    "common/listeners": "/assets/common/listeners-be4caf063f51b5c837b171883828ebdcc0e80facad9c679b5ecd084315b7e6d2.js",
+    "common/util": "/assets/common/util-a521fb9fa985ff23462c2a40993a5f4373bffac8a878dbf4bbd55a3bb249920b.js",
+    "library/main": "/assets/library/main-252453dfeb4c0aa9768727908c41d702fad7178c65e67b66548852cbc2e7783c.js",
+    "library/serviceworker-companion": "/assets/library/serviceworker-companion-b556b25eef2b071fb42c147ebc4980bf067c3044a93ba2a98070839b1461546c.js",
+    "network/main": "/assets/network/main-8979d570965002baab5723d1c17a0527843992460a47a2668b7933415b047c87.js"
+  }
+}</script>
+<script type="module" nonce="55125e76a4491987d2764e6421e975b9">import "library"</script>
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="QnTmkRdjk6fzAlpIXyVSzFxKbyVkT1iE-mxqJaTYyxHIokJ3phM5cpnICrs_2T-N9JRB2XfXUH_pT9HDlTl9Dw" />
+<meta name="csp-nonce" content="55125e76a4491987d2764e6421e975b9" />
+</head>
+<body class='d-flex flex-column h-100'>
+<noscript>
+<iframe class='hidden' height='0' src='https://www.googletagmanager.com/ns.html?id=GTM-KVLSPNJ' width='0'></iframe>
+</noscript>
+
+<div id='container'>
+<a class='skip-to-content-link' href='#main' role='link'>Skip to content</a>
+<div class='container-sub'>
+<header>
+<div class='row'>
+<div class='col-sm'>
+<a href='/opentextbooks/'>
+<picture id="banner"><!-- / %source{srcset: image_path('library/otl_logo_dark.webp'), media: '(prefers-color-scheme: dark)' } -->
+<img alt="Library Home" title="Open Textbook Library logo" width="1000" height="271" src="/assets/library/otl_logo-23d864367b91dd38b6ef8eeec20ee0ae733b8f3685c53f178fd4ea06f6a95100.webp" />
+</picture></a>
+</div>
+<search class='col-sm align-self-end'>
+<form id="search-oer" action="/opentextbooks/textbooks" accept-charset="UTF-8" method="get"><div class='input-group input-group-sm'>
+
+<fieldset class="hw-combobox" data-async-id="search" data-controller="hw-combobox" data-hw-combobox-expanded-value="false" data-hw-combobox-name-when-new-value="q" data-hw-combobox-original-name-value="search" data-hw-combobox-autocomplete-value="both" data-hw-combobox-small-viewport-max-width-value="640px" data-hw-combobox-async-src-value="/opentextbooks/textbooks?for_id=search&amp;format=turbo_stream" data-hw-combobox-filterable-attribute-value="data-filterable-as" data-hw-combobox-autocompletable-attribute-value="data-autocompletable-as" data-hw-combobox-selected-class="hw-combobox__option--selected" data-hw-combobox-invalid-class="hw-combobox__input--invalid">
+  <label class="hw-combobox__label" for="search" hidden="hidden"></label>
+
+  <input type="hidden" name="search" id="search-hw-hidden-field" data-hw-combobox-target="hiddenField" autocomplete="off" />
+
+  <div class="hw-combobox__main__wrapper" data-hw-combobox-target="mainWrapper">
+    <style nonce="55125e76a4491987d2764e6421e975b9">
+      .hw-combobox__announcer {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+
+      .hw_combobox__pagination__wrapper {
+        height: 1px;
+      }
+</style>
+    <div class="hw-combobox__announcer" data-hw-combobox-target="announcer" aria-live="polite" aria-atomic="true"></div>
+    <input id="search" role="combobox" type="text" class="hw-combobox__input" autocomplete="off" data-action="click-&gt;hw-combobox#toggle keydown-&gt;hw-combobox#prepareToFilter input-&gt;hw-combobox#filterAndSelect keydown-&gt;hw-combobox#navigate click@window-&gt;hw-combobox#closeOnClickOutside focusin@window-&gt;hw-combobox#closeOnFocusOutside turbo:before-stream-render@document-&gt;hw-combobox#rerouteListboxStreamToDialog turbo:before-cache@document-&gt;hw-combobox#hideChipsForCache turbo:morph-element-&gt;hw-combobox#idempotentConnect" data-hw-combobox-target="combobox" data-async-id="search" aria-controls="search-hw-listbox" aria-owns="search-hw-listbox" aria-haspopup="listbox" aria-autocomplete="both" aria-activedescendant="" title="Textbook Search" placeholder="Search the Library">
+    <span class="hw-combobox__handle" data-action="click-&gt;hw-combobox#clearOrToggleOnHandleClick" data-hw-combobox-target="handle"></span>
+
+    <ul id="search-hw-listbox" role="listbox" hidden="hidden" class="hw-combobox__listbox" data-hw-combobox-target="listbox" aria-multiselectable="false">
+
+        
+<li id="search__hw_combobox_pagination__wrapper" class="hw_combobox__pagination__wrapper" data-hw-combobox-target="endOfOptionsStream" aria-hidden="true">
+  <turbo-frame loading="lazy" id="search__hw_combobox_pagination" src="/opentextbooks/textbooks?for_id=search&amp;format=turbo_stream"></turbo-frame>
+</li>
+</ul>
+    <div tabindex="-1" data-hw-combobox-target="dialogFocusTrap"></div>
+
+    <div class="hw-combobox__dialog__wrapper">
+      <dialog class="hw-combobox__dialog" role="dialog" data-action="keydown-&gt;hw-combobox#navigate" data-hw-combobox-target="dialog">
+        <label class="hw-combobox__dialog__label" for="search-hw-dialog-combobox">Textbook Search</label>
+        <input id="search-hw-dialog-combobox" role="combobox" autofocus="autofocus" type="text" class="hw-combobox__dialog__input" data-action="keydown-&gt;hw-combobox#prepareToFilter input-&gt;hw-combobox#filterAndSelect keydown-&gt;hw-combobox#navigate click@window-&gt;hw-combobox#closeOnClickOutside" data-hw-combobox-target="dialogCombobox" aria-controls="search-hw-dialog-listbox" aria-owns="search-hw-dialog-listbox" aria-autocomplete="both" aria-activedescendant="">
+        <ul id="search-hw-dialog-listbox" role="listbox" class="hw-combobox__dialog__listbox" data-hw-combobox-target="dialogListbox" aria-multiselectable="false"></ul>
+</dialog></div></div></fieldset>
+<input type="submit" name="commit" value="Go" class="primary search-button btn btn-secondary white input-group-text" data-disable-with="Go" />
+</div>
+</form></search>
+</div>
+</header>
+<div class='border-top'>
+<nav id='library-nav'>
+<ul>
+<li>
+<a href="/opentextbooks/subjects">Browse Subjects</a>
+<ul class="subject-directory"><li><a title="144 Business textbooks" data-unhide-mouseover="nav_textbook_subject_2" href="/opentextbooks/subjects/business">Business</a><a class="galaxy" aria-label="Expand Business" data-toggle="nav_textbook_subject_2" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_2" hidden="hidden"><li><a title="18 Accounting textbooks" href="/opentextbooks/subjects/accounting">Accounting</a></li><li><a title="25 Finance textbooks" href="/opentextbooks/subjects/finance">Finance</a></li><li><a title="13 Human Resources textbooks" href="/opentextbooks/subjects/human-resources">Human Resources</a></li><li><a title="60 Management textbooks" href="/opentextbooks/subjects/management">Management</a></li><li><a title="22 Marketing textbooks" href="/opentextbooks/subjects/marketing">Marketing</a></li></ul></li><li><a title="137 Computer Science textbooks" data-unhide-mouseover="nav_textbook_subject_3" href="/opentextbooks/subjects/computer-science-information-systems">Computer Science</a><a class="galaxy" aria-label="Expand Computer Science" data-toggle="nav_textbook_subject_3" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_3" hidden="hidden"><li><a title="6 Databases textbooks" href="/opentextbooks/subjects/databases">Databases</a></li><li><a title="27 Information Systems textbooks" href="/opentextbooks/subjects/information-systems">Information Systems</a></li><li><a title="26 Programming Languages textbooks" href="/opentextbooks/subjects/programming-languages">Programming Languages</a></li></ul></li><li><a title="144 Education textbooks" data-unhide-mouseover="nav_textbook_subject_5" href="/opentextbooks/subjects/education">Education</a><a class="galaxy" aria-label="Expand Education" data-toggle="nav_textbook_subject_5" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_5" hidden="hidden"><li><a title="44 Curriculum &amp; Instruction textbooks" href="/opentextbooks/subjects/curriculum-instruction">Curriculum &amp; Instruction</a></li><li><a title="10 Distance Education textbooks" href="/opentextbooks/subjects/distance-education">Distance Education</a></li><li><a title="16 Early Childhood textbooks" href="/opentextbooks/subjects/early-childhood">Early Childhood</a></li><li><a title="14 Elementary Education textbooks" href="/opentextbooks/subjects/elementary-education">Elementary Education</a></li><li><a title="34 Higher Education textbooks" href="/opentextbooks/subjects/higher-education">Higher Education</a></li><li><a title="10 Secondary Education textbooks" href="/opentextbooks/subjects/secondary-education">Secondary Education</a></li></ul></li><li><a title="119 Engineering &amp; Technology textbooks" data-unhide-mouseover="nav_textbook_subject_13" href="/opentextbooks/subjects/engineering">Engineering &amp; Technology</a><a class="galaxy" aria-label="Expand Engineering &amp; Technology" data-toggle="nav_textbook_subject_13" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_13" hidden="hidden"><li><a title="13 Civil Engineering textbooks" href="/opentextbooks/subjects/civil">Civil Engineering</a></li><li><a title="24 Electrical Engineering textbooks" href="/opentextbooks/subjects/electrical">Electrical Engineering</a></li><li><a title="20 Mechanical Engineering textbooks" href="/opentextbooks/subjects/mechanical">Mechanical Engineering</a></li></ul></li><li><a title="418 Humanities textbooks" data-unhide-mouseover="nav_textbook_subject_6" href="/opentextbooks/subjects/humanities">Humanities</a><a class="galaxy" aria-label="Expand Humanities" data-toggle="nav_textbook_subject_6" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_6" hidden="hidden"><li><a title="56 Arts textbooks" href="/opentextbooks/subjects/arts">Arts</a></li><li><a title="52 History textbooks" href="/opentextbooks/subjects/history">History</a></li><li><a title="123 Languages textbooks" href="/opentextbooks/subjects/languages">Languages</a></li><li><a title="12 Linguistics textbooks" href="/opentextbooks/subjects/linguistics">Linguistics</a></li><li><a title="124 Literature, Rhetoric, and Poetry textbooks" href="/opentextbooks/subjects/literature-rhetoric-and-poetry">Literature, Rhetoric, and Poetry</a></li><li><a title="18 Music textbooks" href="/opentextbooks/subjects/music">Music</a></li><li><a title="40 Philosophy textbooks" href="/opentextbooks/subjects/philosophy">Philosophy</a></li><li><a title="19 Religion textbooks" href="/opentextbooks/subjects/religion">Religion</a></li></ul></li><li><a title="57 Journalism, Media Studies &amp; Communications textbooks" data-unhide-mouseover="nav_textbook_subject_16" href="/opentextbooks/subjects/journalism-media-studies-communications">Journalism, Media Studies &amp; Communications</a><a class="galaxy" aria-label="Expand Journalism, Media Studies &amp; Communications" data-toggle="nav_textbook_subject_16" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_16" hidden="hidden"><li><a title="14 New Media Journalism textbooks" href="/opentextbooks/subjects/new-media-journalism">New Media Journalism</a></li></ul></li><li><a title="99 Law textbooks" data-unhide-mouseover="nav_textbook_subject_11" href="/opentextbooks/subjects/law">Law</a><a class="galaxy" aria-label="Expand Law" data-toggle="nav_textbook_subject_11" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_11" hidden="hidden"><li><a title="14 Administrative Law textbooks" href="/opentextbooks/subjects/administrative-law">Administrative Law</a></li><li><a title="26 Civil Law textbooks" href="/opentextbooks/subjects/law-civil-law">Civil Law</a></li><li><a title="19 Constitutional Law textbooks" href="/opentextbooks/subjects/constitutional-law">Constitutional Law</a></li><li><a title="25 Contract Law textbooks" href="/opentextbooks/subjects/environmental-law">Contract Law</a></li><li><a title="20 Criminal Law textbooks" href="/opentextbooks/subjects/criminal-law">Criminal Law</a></li><li><a title="12 Procedural Law textbooks" href="/opentextbooks/subjects/contract-law">Procedural Law</a></li><li><a title="22 Property Law textbooks" href="/opentextbooks/subjects/property-law">Property Law</a></li></ul></li><li><a title="177 Mathematics textbooks" data-unhide-mouseover="nav_textbook_subject_7" href="/opentextbooks/subjects/mathematics">Mathematics</a><a class="galaxy" aria-label="Expand Mathematics" data-toggle="nav_textbook_subject_7" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_7" hidden="hidden"><li><a title="29 Algebra textbooks" href="/opentextbooks/subjects/algebra">Algebra</a></li><li><a title="8 Analysis textbooks" href="/opentextbooks/subjects/analysis">Analysis</a></li><li><a title="48 Applied textbooks" href="/opentextbooks/subjects/applied">Applied</a></li><li><a title="31 Calculus textbooks" href="/opentextbooks/subjects/calculus">Calculus</a></li><li><a title="10 Geometry and Trigonometry textbooks" href="/opentextbooks/subjects/geometry-and-trigonometry">Geometry and Trigonometry</a></li><li><a title="83 Pure textbooks" href="/opentextbooks/subjects/pure">Pure</a></li><li><a title="30 Statistics textbooks" href="/opentextbooks/subjects/statistics">Statistics</a></li></ul></li><li><a title="111 Medicine textbooks" data-unhide-mouseover="nav_textbook_subject_17" href="/opentextbooks/subjects/medicine">Medicine</a><a class="galaxy" aria-label="Expand Medicine" data-toggle="nav_textbook_subject_17" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_17" hidden="hidden"><li><a title="23 Nursing textbooks" href="/opentextbooks/subjects/nursing">Nursing</a></li><li><a title="14 Nutrition textbooks" href="/opentextbooks/subjects/nutrition">Nutrition</a></li></ul></li><li><a title="252 Natural Sciences textbooks" data-unhide-mouseover="nav_textbook_subject_8" href="/opentextbooks/subjects/natural-sciences">Natural Sciences</a><a class="galaxy" aria-label="Expand Natural Sciences" data-toggle="nav_textbook_subject_8" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_8" hidden="hidden"><li><a title="88 Biology textbooks" href="/opentextbooks/subjects/biology">Biology</a></li><li><a title="31 Chemistry textbooks" href="/opentextbooks/subjects/chemistry">Chemistry</a></li><li><a title="54 Earth Sciences textbooks" href="/opentextbooks/subjects/geology">Earth Sciences</a></li><li><a title="47 Physics textbooks" href="/opentextbooks/subjects/physics">Physics</a></li></ul></li><li><a title="285 Social Sciences textbooks" data-unhide-mouseover="nav_textbook_subject_9" href="/opentextbooks/subjects/social-sciences">Social Sciences</a><a class="galaxy" aria-label="Expand Social Sciences" data-toggle="nav_textbook_subject_9" href="#"><span class="nova">+</span></a><ul id="nav_textbook_subject_9" hidden="hidden"><li><a title="9 Anthropology textbooks" href="/opentextbooks/subjects/anthropology">Anthropology</a></li><li><a title="26 Cultural &amp; Ethnic Studies textbooks" href="/opentextbooks/subjects/cultural-ethnic-studies">Cultural &amp; Ethnic Studies</a></li><li><a title="46 Economics textbooks" href="/opentextbooks/subjects/economics">Economics</a></li><li><a title="16 Gender &amp; Sexuality Studies textbooks" href="/opentextbooks/subjects/gender-sexuality-studies">Gender &amp; Sexuality Studies</a></li><li><a title="20 Geography textbooks" href="/opentextbooks/subjects/geography">Geography</a></li><li><a title="25 Library Science and Museum Studies textbooks" href="/opentextbooks/subjects/library-science-and-museum-studies">Library Science and Museum Studies</a></li><li><a title="41 Political Science textbooks" href="/opentextbooks/subjects/political-science">Political Science</a></li><li><a title="51 Psychology textbooks" href="/opentextbooks/subjects/psychology">Psychology</a></li><li><a title="35 Sociology textbooks" href="/opentextbooks/subjects/sociology">Sociology</a></li></ul></li><li><a title="65 Student Success textbooks" href="/opentextbooks/subjects/student-success">Student Success</a></li></ul>
+</li>
+<li>
+<a href="/opentextbooks/books">About Open Textbooks</a>
+<ul>
+<li><a href="/opentextbooks/faq">FAQ</a></li>
+<li><a href="/opentextbooks/friends">Friends</a></li>
+</ul>
+</li>
+<li>
+<a href="/opentextbooks/textbooks/submit">Submit</a>
+<!-- / %ul -->
+<!-- /  %li= link_to t('library.nav.menu.submit_book'), library_submit_path -->
+<!-- /  %li= link_to t('library.nav.menu.submit_ancillary'), new_library_textbook_ancillary_path -->
+</li>
+<li><a href="/opentextbooks/discovery">Discovery</a></li>
+<li><a data-turbo="false" href="/oen">Open Education Network</a></li>
+</ul>
+</nav>
+</div>
+
+<br class='clearfloat'>
+<main id='main'>
+
+<h1>All Textbooks</h1>
+<div data-controller='library--filter'>
+<div class='row ms-0'>
+<div class='col-md-3'>
+<div class='row d-flex align-items-center' data-action='click-&gt;library--filter#toggleFilter keydown.enter-&gt;library--filter#toggleFilter' data-library--filter-target='toggle' id='filter-toggle' tabindex='0'>
+<div class='col-9'>
+<h4>Filters</h4>
+</div>
+<div class='col right'><i class="fa fa-caret-down " data-library--filter-target="button"></i></div>
+</div>
+</div>
+</div>
+<div class='row ms-0' data-action='scroll@window-&gt;common--infinite-scroll#scroll' data-common--infinite-scroll-spinner-value='&lt;img src=&quot;/assets/common/loading-75785e98f2936b51d74be76e3082a544651697e09ed7e6629b9090f68eb266c6.gif&quot; /&gt;' data-controller='common--infinite-scroll'>
+<div class='col-md-3 px-0 me-3' data-library--filter-target='container' hidden id='filterContainer'>
+<div class='px-3 pb-3' id='filters'><hr class='mt-0'>
+<form data-library--filter-target="form" action="/opentextbooks/textbooks" accept-charset="UTF-8" method="get">
+<label class="form-label" for="language">Language</label>
+<select data-action="change-&gt;library--filter#submit" class="info-focus form-control form-select form-select-sm" aria-label="Filter textbooks with selected language" name="language" id="language"><option value="">All languages</option>
+<option value="ara">Arabic</option>
+<option value="aze">Azerbaijani</option>
+<option value="bul">Bulgarian</option>
+<option value="chi">Chinese</option>
+<option value="dut">Dutch; Flemish</option>
+<option value="eng">English</option>
+<option value="fre">French</option>
+<option value="ger">German</option>
+<option value="gre">Greek, Modern (1453-)</option>
+<option value="ita">Italian</option>
+<option value="jpn">Japanese</option>
+<option value="kor">Korean</option>
+<option value="pol">Polish</option>
+<option value="por">Portuguese</option>
+<option value="rus">Russian</option>
+<option value="slv">Slovenian</option>
+<option value="spa">Spanish; Castilian</option>
+<option value="swa">Swahili</option>
+<option value="ukr">Ukrainian</option></select>
+<label class="form-label mt-3" for="licenses">License</label>
+<div class='form-check'>
+<input id="CC BY" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="Attribution" name="licenses[]" />
+<label for="CC BY" class="form-check-label">Attribution
+(CC BY)
+</label></div>
+<div class='form-check'>
+<input id="CC BY-SA" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="Attribution-ShareAlike" name="licenses[]" />
+<label for="CC BY-SA" class="form-check-label">Attribution-ShareAlike
+<br>
+(CC BY-SA)
+</label></div>
+<div class='form-check'>
+<input id="CC BY-NC" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="Attribution-NonCommercial" name="licenses[]" />
+<label for="CC BY-NC" class="form-check-label">Attribution-NonCommercial
+(CC BY-NC)
+</label></div>
+<div class='form-check'>
+<input id="CC BY-NC-SA" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="Attribution-NonCommercial-ShareAlike" name="licenses[]" />
+<label for="CC BY-NC-SA" class="form-check-label">Attribution-NonCommercial-ShareAlike
+(CC BY-NC-SA)
+</label></div>
+<div class='form-check'>
+<input id="CC0" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="No Rights Reserved" name="licenses[]" />
+<label for="CC0" class="form-check-label">No Rights Reserved
+(CC0)
+</label></div>
+<div class='form-check'>
+<input id="Free Documentation License (GNU)" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="Free Documentation License (GNU)" name="licenses[]" />
+<label for="Free Documentation License (GNU)" class="form-check-label">Free Documentation License (GNU)
+</label></div>
+<label class="form-label mt-3" for="formats">Formats</label>
+<div class='form-check'>
+<input id="Hardcopy" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="Hardcopy" name="formats[]" />
+<label for="Hardcopy" class="form-check-label">Hardcopy</label>
+</div>
+<div class='form-check'>
+<input id="eBook" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="eBook" name="formats[]" />
+<label for="eBook" class="form-check-label">eBook</label>
+</div>
+<div class='form-check'>
+<input id="Online" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="Online" name="formats[]" />
+<label for="Online" class="form-check-label">Online</label>
+</div>
+<div class='form-check'>
+<input id="PDF" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="PDF" name="formats[]" />
+<label for="PDF" class="form-check-label">PDF</label>
+</div>
+<div class='form-check'>
+<input id="Google Doc" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="Google Doc" name="formats[]" />
+<label for="Google Doc" class="form-check-label">Google Doc</label>
+</div>
+<div class='form-check'>
+<input id="MS Word" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="MS Word" name="formats[]" />
+<label for="MS Word" class="form-check-label">MS Word</label>
+</div>
+<div class='form-check'>
+<input id="LaTeX" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="LaTeX" name="formats[]" />
+<label for="LaTeX" class="form-check-label">LaTeX</label>
+</div>
+<div class='form-check'>
+<input id="XML" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="XML" name="formats[]" />
+<label for="XML" class="form-check-label">XML</label>
+</div>
+<div class='form-check'>
+<input id="ODF" class="form-check-input info-focus" data-action="change-&gt;library--filter#submit" type="checkbox" value="ODF" name="formats[]" />
+<label for="ODF" class="form-check-label">ODF</label>
+</div>
+<label class="form-label mt-3" for="order_by">Order by</label>
+<select data-action="change-&gt;library--filter#submit" class="info-focus form-control form-select form-select-sm" name="order_by" id="order_by"><option value="publication_date">Date added to library</option>
+<option value="rating">Faculty rating</option>
+<option value="copyright_year">Publication date</option></select>
+<div class='center'><input type="submit" name="commit" value="Filter" class="btn btn-sm btn-info white mt-3 col-6" data-disable-with="Filter" /></div>
+</form></div>
+</div>
+<turbo-frame class="col px-0" id="results" target="_top"><div data-common--infinite-scroll-target='entries' id='textbook-list' role='feed'><div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about Accounting in the Finance World" href="/opentextbooks/textbooks/financial-accounting"><img alt="Read more about Accounting in the Finance World" title="Accounting in the Finance World cover image" class="cover " width="490" height="735" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MTk2MSwicHVyIjoiYmxvYl9pZCJ9fQ==--423b90b6b5a5b211683ccff2599b1eb676bdc3f8/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--92321c91481b14cf986468483667757f1e9e4957/Financial-Accounting-683x1024.jpg" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/financial-accounting">Accounting in the Finance World</a></h2>
+<p>
+Copyright Year:
+<time datetime='2016'>2016</time>
+</p>
+<p>
+Publisher:
+University of Minnesota Libraries Publishing
+</p>
+<p>
+License:
+CC BY-NC-SA
+</p>
+<p>This book is intended for an undergraduate or MBA level Financial Accounting course. It covers the standard topics in a standard sequence, utilizing the Socratic method of asking and answering questions.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="empty star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-empty-ec78cff85e3afa5faae389dac801ab07e1d6a7bccad1820e0be7ed497e9ce46d.webp" /></p>
+<p>
+(7 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/financial-accounting">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about A First Course in Linear Algebra" href="/opentextbooks/textbooks/a-first-course-in-linear-algebra"><img alt="Read more about A First Course in Linear Algebra" title="A First Course in Linear Algebra cover image" class="cover " width="490" height="700" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MTI0ODUsInB1ciI6ImJsb2JfaWQifX0=--a9e73d721a2de09a42897124aa02de1ee4eec9d4/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--1d221d0e87311391d13a7728d03226e2fff3667a/cover-350x700.png" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/a-first-course-in-linear-algebra">A First Course in Linear Algebra</a></h2>
+<p>
+Copyright Year:
+<time datetime='2015'>2015</time>
+</p>
+<p>
+Contributor:
+Beezer
+</p>
+<p>
+Publisher:
+Robert Beezer
+</p>
+<p>
+License:
+Free Documentation License (GNU)
+</p>
+<p>A First Course in Linear Algebra is an introductory textbook aimed at college-level sophomores and juniors. Typically students will have taken calculus, but it is not a prerequisite. The book begins with systems of linear equations, then covers matrix algebra, before taking up finite-dimensional vector spaces in full generality. The final chapter covers matrix representations of linear transformations, through diagonalization, change of basis and Jordan canonical form. Determinants and eigenvalues are covered along the way.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="half star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-half-b3d1402d4d8b741685ecb80331016b6e491bcc446a4a1b453877262d0fad85f6.webp" /></p>
+<p>
+(11 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/a-first-course-in-linear-algebra">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about Book of Proof" href="/opentextbooks/textbooks/book-of-proof"><img alt="Read more about Book of Proof - Third Edition" title="Book of Proof - Third Edition cover image" class="cover " width="490" height="700" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MTQyMTUsInB1ciI6ImJsb2JfaWQifX0=--56b89ca183f8abc2d90d2f65877f307ca067bcb8/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--92321c91481b14cf986468483667757f1e9e4957/Cover3BlueFront.jpg" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/book-of-proof">Book of Proof - Third Edition</a></h2>
+<p>
+Copyright Year:
+<time datetime='2018'>2018</time>
+</p>
+<p>
+Contributor:
+Hammack
+</p>
+<p>
+Publisher:
+Richard Hammack
+</p>
+<p>
+License:
+CC BY-ND
+</p>
+<p>This is a book about how to prove theorems.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="half star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-half-b3d1402d4d8b741685ecb80331016b6e491bcc446a4a1b453877262d0fad85f6.webp" /></p>
+<p>
+(8 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/book-of-proof">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about Communication for Business Success" href="/opentextbooks/textbooks/business-communication-for-success"><img alt="Read more about Communication for Business Success" title="Communication for Business Success cover image" class="cover " width="490" height="735" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MTk1OCwicHVyIjoiYmxvYl9pZCJ9fQ==--a055c223959f04649e60ce6edbcac1f25dc2ec1b/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--92321c91481b14cf986468483667757f1e9e4957/Business-Communication-for-Success-683x1024.jpg" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/business-communication-for-success">Communication for Business Success</a></h2>
+<p>
+Copyright Year:
+<time datetime='2015'>2015</time>
+</p>
+<p>
+Publisher:
+University of Minnesota Libraries Publishing
+</p>
+<p>
+License:
+CC BY-NC-SA
+</p>
+<p>Business Communication for Success (BCS) provides a comprehensive, integrated approach to the study and application of written and oral business communication to serve both student and professor.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="empty star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-empty-ec78cff85e3afa5faae389dac801ab07e1d6a7bccad1820e0be7ed497e9ce46d.webp" /></p>
+<p>
+(40 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/business-communication-for-success">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about College Success" href="/opentextbooks/textbooks/college-success"><img alt="Read more about College Success" title="College Success cover image" class="cover " width="490" height="735" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MTk1NywicHVyIjoiYmxvYl9pZCJ9fQ==--a5a9268b7110a54294a3f4136ce4dd0e65651f4c/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--92321c91481b14cf986468483667757f1e9e4957/College-Success-683x1024.jpg" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/college-success">College Success</a></h2>
+<p>
+Copyright Year:
+<time datetime='2015'>2015</time>
+</p>
+<p>
+Publisher:
+University of Minnesota Libraries Publishing
+</p>
+<p>
+License:
+CC BY-NC-SA
+</p>
+<p>Our primary goal in writing College Success is to help you succeed in college.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="half star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-half-b3d1402d4d8b741685ecb80331016b6e491bcc446a4a1b453877262d0fad85f6.webp" /></p>
+<p>
+(55 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/college-success">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about Calculus" href="/opentextbooks/textbooks/calculus"><img alt="Read more about Calculus - Third Edition" title="Calculus - Third Edition cover image" class="cover " width="490" height="638" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MTAzMzMsInB1ciI6ImJsb2JfaWQifX0=--d33da72254617dcf9f37378f4de1aef441d8c9f5/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--92321c91481b14cf986468483667757f1e9e4957/calculus.jpg" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/calculus">Calculus - Third Edition</a></h2>
+<p>
+Copyright Year:
+<time datetime='1991'>1991</time>
+</p>
+<p>
+Contributor:
+Strang
+</p>
+<p>
+Publisher:
+Wellesley-Cambridge Press
+</p>
+<p>
+License:
+CC BY-NC-SA
+</p>
+<p>Published in 1991 by Wellesley-Cambridge Press, the book is a useful resource for educators and self-learners alike. It is well organized, covers single variable and multivariable calculus in depth, and is rich with applications.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="half star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-half-b3d1402d4d8b741685ecb80331016b6e491bcc446a4a1b453877262d0fad85f6.webp" /></p>
+<p>
+(4 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/calculus">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about Collaborative Statistics" href="/opentextbooks/textbooks/collaborative-statistics"><img alt="Read more about Collaborative Statistics" title="Collaborative Statistics cover image" class="cover " width="490" height="647" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NywicHVyIjoiYmxvYl9pZCJ9fQ==--121c091aceaea2a676b4ec5ad5f1a0ff738c2fa7/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--1d221d0e87311391d13a7728d03226e2fff3667a/9780978745073.png" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/collaborative-statistics">Collaborative Statistics</a></h2>
+<p>
+Copyright Year:
+<time datetime='2012'>2012</time>
+</p>
+<p>
+Contributors:
+Illowsky and Dean
+</p>
+<p>
+Publisher:
+OpenStax CNX
+</p>
+<p>
+License:
+CC BY
+</p>
+<p>Collaborative Statistics was written by Barbara Illowsky and Susan Dean, faculty members at De Anza Collegein Cupertino, California. The textbook was developed over several years and has been used in regularand honors-level classroom settings and in distance learning classes. Courses using this textbook have beenarticulated by the University of California for transfer of credit. The textbook contains full materials forcourse offerings, including expository text, examples, labs, homework, and projects. A Teacher&#39;s Guide iscurrently available in print form and on the Connexions site at and supplemental course materials including additional problem sets and video lectures are available. The on-line text for each of these collections collections willmeet the Section 508 standards for accessibility.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="empty star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-empty-ec78cff85e3afa5faae389dac801ab07e1d6a7bccad1820e0be7ed497e9ce46d.webp" /></p>
+<p>
+(18 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/collaborative-statistics">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about College Algebra" href="/opentextbooks/textbooks/college-algebra"><img alt="Read more about College Algebra" title="College Algebra cover image" class="cover " width="490" height="639" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6OCwicHVyIjoiYmxvYl9pZCJ9fQ==--e1d523ddf3aefd719fbb7cef0b18503120f13a6b/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--1d221d0e87311391d13a7728d03226e2fff3667a/0000CollegeAl.png" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/college-algebra">College Algebra</a></h2>
+<p>
+Copyright Year:
+<time datetime='2013'>2013</time>
+</p>
+<p>
+Contributors:
+Stitz and Zeager
+</p>
+<p>
+Publisher:
+Stitz Zeager Open Source Mathematics
+</p>
+<p>
+License:
+CC BY-NC-SA
+</p>
+<p>College Algebra is an introductory text for a college algebra survey course. The material is presented at a level intended to prepare students for Calculus while also giving them relevant mathematical skills that can be used in other classes. The authors describe their approach as &quot;Functions First,&quot; believing introducing functions first will help students understand new concepts more completely.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="empty star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-empty-ec78cff85e3afa5faae389dac801ab07e1d6a7bccad1820e0be7ed497e9ce46d.webp" /></p>
+<p>
+(11 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/college-algebra">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about Elementary Algebra" href="/opentextbooks/textbooks/elementary-algebra"><img alt="Read more about Elementary Algebra" title="Elementary Algebra cover image" class="cover " width="490" height="639" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6OSwicHVyIjoiYmxvYl9pZCJ9fQ==--fe937de771d99d8408fe066815ea4616912cea06/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--1d221d0e87311391d13a7728d03226e2fff3667a/9781453300923.png" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/elementary-algebra">Elementary Algebra</a></h2>
+<p>
+Copyright Year:
+<time datetime='2011'>2011</time>
+</p>
+<p>
+Contributor:
+Redden
+</p>
+<p>
+Publisher:
+Saylor Foundation
+</p>
+<p>
+License:
+CC BY-NC-SA
+</p>
+<p>It is essential to lay a solid foundation in mathematics if a student is to be competitive in today&#39;s global market. The importance of algebra, in particular, cannot be overstated, as it is the basis of all mathematical modeling used in applications found in all disciplines. Traditionally, the study of algebra is separated into a two parts, elementary algebra and intermediate algebra. This textbook, Elementary Algebra, is the first part, written in a clear and concise manner, making no assumption of prior algebra experience. It carefully guides students from the basics to the more advanced techniques required to be successful in the next course.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="empty star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-empty-ec78cff85e3afa5faae389dac801ab07e1d6a7bccad1820e0be7ed497e9ce46d.webp" /></p>
+<p>
+(12 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/elementary-algebra">READ MORE</a></p>
+</div>
+</div>
+<div class='row short-description' role='article' tabindex='0'>
+<div class='col-sm-3 cover center px-0'><a alt="Read more about eMarketing: The Essential Guide to Marketing in a Digital World" href="/opentextbooks/textbooks/emarketing-the-essential-guide-to-marketing-in-a-digital-world"><img alt="Read more about eMarketing: The Essential Guide to Marketing in a Digital World - 7th Edition" title="eMarketing: The Essential Guide to Marketing in a Digital World - 7th Edition cover image" class="cover " width="490" height="706" data-controller="common--cover" data-placeholder="/assets/common/placeholder-f8e123f91b7e13ad321132c609842fdd40121f691ee7db391b88763bc42be6a0.webp" src="https://open.umn.edu/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MTA2NzgsInB1ciI6ImJsb2JfaWQifX0=--0096dc40a3d721437d93a14e2440d4c67867c863/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemUiOiI0OTB4MTAwMCJ9LCJwdXIiOiJ2YXJpYXRpb24ifX0=--92321c91481b14cf986468483667757f1e9e4957/eMarketing.jpg" /></a></div>
+<div class='col-sm-9 info'>
+<h2><a href="/opentextbooks/textbooks/emarketing-the-essential-guide-to-marketing-in-a-digital-world">eMarketing: The Essential Guide to Marketing in a Digital World - 7th Edition</a></h2>
+<p>
+Copyright Year:
+<time datetime='2022'>2022</time>
+</p>
+<p>
+Contributors:
+Solomons, Kliphuis, and Wadley
+</p>
+<p>
+Publisher:
+Red &amp; Yellow
+</p>
+<p>
+License:
+CC BY-NC-SA
+</p>
+<p>Since our 10th Anniversary Edition of eMarketing: The Essential Guide to Marketing in a Digital World, we have witnessed a global wave of change that has had an undeniable impact on how we live, connect, and communicate worldwide. There is no doubt that the COVID-19 pandemic has, and will continue to have, a lasting effect on human reality. With this in mind, we are incredibly proud to present the 7th Edition of our textbook.</p>
+<p><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="whole star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-whole-a9a6484ab53ada1da427c230b290e4aebfeb6736c652d747fd2e43a803bc2ea8.webp" /><img title="half star" class="star-icon" width="21" height="18" src="/assets/common/stars/star-half-b3d1402d4d8b741685ecb80331016b6e491bcc446a4a1b453877262d0fad85f6.webp" /></p>
+<p>
+(16 reviews)
+</p>
+<p class='buttons'><a class="primary with-arrows" href="/opentextbooks/textbooks/emarketing-the-essential-guide-to-marketing-in-a-digital-world">READ MORE</a></p>
+</div>
+</div>
+</div>
+<div class='center' data-common--infinite-scroll-target='pagination' id='pagination'>  <nav class="pagination" role="navigation" aria-label="pager">
+    
+    
+        <span class="page current">
+  1
+</span>
+
+        <span class="page">
+  <a rel="next" href="/opentextbooks/textbooks?page=2&amp;scroll=true&amp;term=calculus">2</a>
+</span>
+
+        <span class="page">
+  <a href="/opentextbooks/textbooks?page=3&amp;scroll=true&amp;term=calculus">3</a>
+</span>
+
+        <span class="page">
+  <a href="/opentextbooks/textbooks?page=4&amp;scroll=true&amp;term=calculus">4</a>
+</span>
+
+        <span class="page">
+  <a href="/opentextbooks/textbooks?page=5&amp;scroll=true&amp;term=calculus">5</a>
+</span>
+
+        <span class="page gap">&hellip;</span>
+
+      <span class="next">
+  <a rel="next" href="/opentextbooks/textbooks?page=2&amp;scroll=true&amp;term=calculus">Next &rsaquo;</a>
+</span>
+
+      <span class="last">
+  <a href="/opentextbooks/textbooks?page=168&amp;scroll=true&amp;term=calculus">Last &raquo;</a>
+</span>
+
+  </nav>
+</div>
+</turbo-frame></div>
+</div>
+
+</main>
+<br class='clearfloat'>
+</div>
+</div>
+</body>
+<footer class='center mt-auto'>
+<div class='container'>
+<div class='content px-5 py-3'>
+<div class='row'>
+<div class='socials left col-sm'>
+<p class='header'>Stay Updated</p>
+<a href="https://mastodon.social/@OpenEd_Network"><i class="fab fa-mastodon " alt="Open Education Network on Mastodon"></i>
+<p class='sr-only'>Twitter</p>
+</a><a href="https://www.linkedin.com/company/open-education-network"><i class="fab fa-linkedin " alt="Open Education Network on LinkedIn"></i>
+<p class='sr-only'>LinkedIn</p>
+</a><a href="https://www.youtube.com/channel/UC_lf4_Wss_uW0KGny_A3erg"><i class="fab fa-youtube " alt="Open Education Network on YouTube"></i>
+<p class='sr-only'>YouTube</p>
+</a></div>
+<div class='newsletter right col-sm'>
+<p class='header'>Join Our Newsletter</p>
+<div class='row'>
+<div class='col right offset-md-2' id='newsletter'>
+<form action='https://cl.exct.net/DEManager.aspx' method='post' name='subscribeForm'>
+<input name='_clientID' type='hidden' value='6329914'>
+<input name='_deExternalKey' type='hidden' value='BF8CCDC6-9A32-460A-B2A6-F74B89BA62BF'>
+<input name='_action' type='hidden' value='add'>
+<input name='_returnXML' type='hidden' value='0'>
+<input name='_successURL' type='hidden' value='https://open.umn.edu/opentextbooks/news?success=true'>
+<input name='_errorURL' type='hidden' value='https://open.umn.edu/opentextbooks/news?success=false'>
+
+<div class='input-group'>
+<input aria-label='Email Newsletter Signup' autocomplete='email' class='form-control email' id='newsletter_signup_email' name='Email Address' placeholder='email address' required title='Email Newsletter Signup' type='email'>
+<input class='btn primary' id='signup-button' type='submit' value='Subscribe'>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+<br class='clearfix'>
+<div class='row'>
+<div class='col center'>
+<p>
+CENTER FOR OPEN EDUCATION | The Open Education Network is based in the Center for Open Education in the University of Minnesota’s College of Education and Human Development.
+<br>
+University of Minnesota, 330 Wulling Hall, 86 Pleasant Street S.E., Minneapolis, MN 55455
+</p>
+<p>
+<a href="http://creativecommons.org/licenses/by/4.0/"><img width="92" height="35" alt="Attribution License" class="license-img" src="/assets/library/licenses/Attribution-cc57bff26f2eb73610d0ffcd514b9aab049fe95712d702c23ba4d69f140bd07d.webp" /></a>
+Except where otherwise noted, content on this site is licensed under a <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 License</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+</footer>
+
+</html>

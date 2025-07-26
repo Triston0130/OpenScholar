@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AI Tags & Notes Save</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test AI Tags & Notes Save</h1>
+    
+    <div class="test-section">
+        <h2>Test Setup</h2>
+        <button onclick="setupTest()">1. Create Test Collection & Paper</button>
+        <button onclick="checkInitialState()">2. Check Initial State</button>
+        <button onclick="simulateAIGeneration()">3. Simulate AI Generation</button>
+        <button onclick="checkFinalState()">4. Check Final State</button>
+        <button onclick="clearTestData()">Clear Test Data</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script type="module">
+        import { v4 as uuidv4 } from 'https://unpkg.com/uuid@9.0.0/dist/esm-browser/index.js';
+        
+        const COLLECTIONS_KEY = 'openscholar_collections';
+        const TEST_COLLECTION_ID = 'test-collection-' + Date.now();
+        
+        window.addResult = function(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        };
+        
+        window.setupTest = function() {
+            try {
+                // Get existing data
+                const data = JSON.parse(localStorage.getItem(COLLECTIONS_KEY) || '{"collections":[],"papers":{},"folders":{}}');
+                
+                // Create test collection
+                const testCollection = {
+                    id: TEST_COLLECTION_ID,
+                    name: 'AI Test Collection',
+                    description: 'Testing AI tags and notes save',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    color: '#3B82F6'
+                };
+                
+                data.collections.push(testCollection);
+                data.papers[TEST_COLLECTION_ID] = [];
+                
+                // Add a test paper
+                const testPaper = {
+                    title: "Test Paper for AI Processing",
+                    authors: ["Test Author"],
+                    year: "2024",
+                    abstract: "This is a test abstract for AI processing",
+                    journal: "Test Journal",
+                    doi: "10.1234/test.2024",
+                    source: "test",
+                    full_text_url: "https://example.com/test.pdf",
+                    savedAt: new Date().toISOString(),
+                    tags: [],
+                    notes: ""
+                };
+                
+                data.papers[TEST_COLLECTION_ID].push(testPaper);
+                
+                localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(data));
+                
+                addResult('Test collection and paper created successfully', 'success');
+                addResult(`Collection ID: ${TEST_COLLECTION_ID}`, 'info');
+            } catch (error) {
+                addResult(`Setup error: ${error.message}`, 'error');
+            }
+        };
+        
+        window.checkInitialState = function() {
+            try {
+                const data = JSON.parse(localStorage.getItem(COLLECTIONS_KEY));
+                const testPapers = data.papers[TEST_COLLECTION_ID];
+                
+                if (testPapers && testPapers.length > 0) {
+                    const paper = testPapers[0];
+                    addResult('Initial state:', 'info');
+                    addResult(`Tags: ${JSON.stringify(paper.tags)}`, 'info');
+                    addResult(`Notes: ${paper.notes || 'empty'}`, 'info');
+                } else {
+                    addResult('No test papers found', 'error');
+                }
+            } catch (error) {
+                addResult(`Check error: ${error.message}`, 'error');
+            }
+        };
+        
+        window.simulateAIGeneration = async function() {
+            try {
+                // Import the actual functions
+                const { updatePaperTagsAndNotes, isPaperInCollection, addPaperToCollection } = await import('./src/utils/collections.js');
+                
+                const data = JSON.parse(localStorage.getItem(COLLECTIONS_KEY));
+                const testPapers = data.papers[TEST_COLLECTION_ID];
+                
+                if (!testPapers || testPapers.length === 0) {
+                    addResult('No test papers found. Run setup first.', 'error');
+                    return;
+                }
+                
+                const paper = testPapers[0];
+                
+                // Simulate AI-generated content
+                const aiTags = ['machine learning', 'neural networks', 'deep learning', 'computer vision', 'AI research'];
+                const aiNotes = `## Summary\nThis paper explores advanced AI techniques.\n\n## Key Terms\n- Neural Networks: Computational models inspired by biological neural networks\n- Deep Learning: A subset of machine learning using neural networks\n\n## Findings\nThe research demonstrates significant improvements in accuracy.`;
+                
+                addResult('Simulating AI generation...', 'info');
+                
+                // Check if paper is in collection
+                const inCollection = isPaperInCollection(paper, TEST_COLLECTION_ID);
+                addResult(`Paper in collection: ${inCollection}`, 'info');
+                
+                if (!inCollection) {
+                    // Add paper with tags and notes
+                    await addPaperToCollection(paper, TEST_COLLECTION_ID, aiTags, aiNotes);
+                    addResult('Added paper to collection with AI content', 'success');
+                } else {
+                    // Update existing paper
+                    updatePaperTagsAndNotes(paper, TEST_COLLECTION_ID, aiTags, aiNotes);
+                    addResult('Updated paper with AI content', 'success');
+                }
+                
+            } catch (error) {
+                addResult(`AI simulation error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+        
+        window.checkFinalState = function() {
+            try {
+                const data = JSON.parse(localStorage.getItem(COLLECTIONS_KEY));
+                const testPapers = data.papers[TEST_COLLECTION_ID];
+                
+                if (testPapers && testPapers.length > 0) {
+                    const paper = testPapers[0];
+                    addResult('Final state:', 'success');
+                    addResult(`Tags: ${JSON.stringify(paper.tags)}`, 'success');
+                    addResult(`Notes preview: ${paper.notes ? paper.notes.substring(0, 100) + '...' : 'empty'}`, 'success');
+                    
+                    // Show full details
+                    const details = document.createElement('pre');
+                    details.textContent = JSON.stringify(paper, null, 2);
+                    const detailsDiv = document.createElement('div');
+                    detailsDiv.className = 'result info';
+                    detailsDiv.innerHTML = '<strong>Full paper data:</strong>';
+                    detailsDiv.appendChild(details);
+                    document.getElementById('results').appendChild(detailsDiv);
+                } else {
+                    addResult('No test papers found', 'error');
+                }
+            } catch (error) {
+                addResult(`Check error: ${error.message}`, 'error');
+            }
+        };
+        
+        window.clearTestData = function() {
+            try {
+                const data = JSON.parse(localStorage.getItem(COLLECTIONS_KEY));
+                
+                // Remove test collection
+                data.collections = data.collections.filter(c => c.id !== TEST_COLLECTION_ID);
+                delete data.papers[TEST_COLLECTION_ID];
+                delete data.folders[TEST_COLLECTION_ID];
+                
+                localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(data));
+                
+                addResult('Test data cleared', 'success');
+                document.getElementById('results').innerHTML = '';
+            } catch (error) {
+                addResult(`Clear error: ${error.message}`, 'error');
+            }
+        };
+    </script>
+</body>
+</html>
