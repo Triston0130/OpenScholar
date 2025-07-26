@@ -1118,13 +1118,12 @@ const PDFViewerSmart: React.FC<PDFViewerProps> = ({ paper, pdfUrl, collectionId,
           
           console.log('[TTS] Created highlight area:', area);
           
-          // Only add if on current page or we haven't found anything yet
+          // ONLY highlight if on current page to prevent jumping
           if (pageIndex === currentPageNumber - 1) {
             foundOnCurrentPage = true;
             areas.push(area);
-          } else if (!foundOnCurrentPage && areas.length === 0) {
-            areas.push(area);
           }
+          // Don't add highlights from other pages - this causes jumping!
         }
       });
     });
